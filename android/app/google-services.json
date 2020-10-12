@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "147610463099",
+    "firebase_url": "https://rainbowfb-cf0a3.firebaseio.com",
+    "project_id": "rainbowfb-cf0a3",
+    "storage_bucket": "rainbowfb-cf0a3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:147610463099:android:9f0203ec2d621de8b96bde",
+        "android_client_info": {
+          "package_name": "com.example.rainbow"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "147610463099-3g0ru08njuser5q7llourjlbjstdbr31.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeLbvV1ieE2jRnER73wThw9U9W6boCd3U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "147610463099-3g0ru08njuser5q7llourjlbjstdbr31.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "147610463099-j0l53f1dbt44m9b37q98meakaj9olecr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.rainbow"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
