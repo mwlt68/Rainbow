@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:rainbow/Views/conversation_page.dart';
 import 'package:rainbow/Widgets/error_widgets.dart';
 
 class ChatPage extends StatefulWidget {
@@ -30,7 +31,7 @@ class _ChatPageState extends State<ChatPage> {
                 .map((e) => ListTile(
                       leading: CircleAvatar(
                         backgroundImage:
-                            NetworkImage("https://picsum.photos/200"),
+                            NetworkImage("https://picsum.photos/200",scale: 0.1),
                       ),
                       title: Text(e['name']),
                       subtitle: Text(e['message']),
@@ -53,6 +54,9 @@ class _ChatPageState extends State<ChatPage> {
                           ),
                         ],
                       ),
+                      onTap: (){
+                        Navigator.push(context,MaterialPageRoute(builder: (content)=>ConversationPage()));
+                      },
                     ))
                 .toList(),
           );
