@@ -1,7 +1,12 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:provider/provider.dart';
 import 'package:rainbow/Views/conversation_page.dart';
 import 'package:rainbow/Widgets/error_widgets.dart';
+import 'package:rainbow/models/converstaion.dart';
+import 'package:rainbow/viewmodels/chat_model.dart';
 
 class ChatPage extends StatefulWidget {
   @override
@@ -9,6 +14,8 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
+  final String mevlutId="LpfLFzN0RsRU4lg2rot8ypyRw023";
+  final String phoneId="mpGlKzhNc8ZpPtvxFC9lRNjx46I2";
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -17,9 +24,12 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget getMessages() {
-    return StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('Chats').snapshots(),
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+    var model =GetIt.instance<ChatModel>();
+    return ChangeNotifierProvider(
+        create: (BuildContext context)=>model,
+        child: StreamBuilder<List<Conversation>>(
+          stream: model.conversations(mevlutId),
+        builder: (context, AsyncSnapshot<List<Conversation>> snapshot) {
           if (snapshot.hasError) {
             return BasicErrorWidget(
                 title: "Data could not load !", message: snapshot.error);
@@ -27,14 +37,14 @@ class _ChatPageState extends State<ChatPage> {
             return CircularProgressIndicator();
           }
           return ListView(
-            children: snapshot.data.docs
-                .map((e) => ListTile(
+            children: snapshot.data
+                .map((conversation) => ListTile(
                       leading: CircleAvatar(
                         backgroundImage:
-                            NetworkImage("https://picsum.photos/200",scale: 0.1),
+                            NetworkImage(conversation.profileImage,scale: 0.1),
                       ),
-                      title: Text(e['name']),
-                      subtitle: Text(e['message']),
+                      title: Text(conversation.name),
+                      subtitle: Text(conversation.displayMessage),
                       trailing: Column(
                         children: [
                           Text("19:34"),
@@ -55,11 +65,14 @@ class _ChatPageState extends State<ChatPage> {
                         ],
                       ),
                       onTap: (){
-                        Navigator.push(context,MaterialPageRoute(builder: (content)=>ConversationPage()));
+                        Navigator.push(context,MaterialPageRoute(
+                          builder: (content)=>ConversationPage(userId: mevlutId,conversationId: conversation.id,))
+                          );
                       },
                     ))
                 .toList(),
           );
-        });
+        }
+        ),);
   }
 }

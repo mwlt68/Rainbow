@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rainbow/Views/calls_page.dart';
 import 'package:rainbow/Views/camera_page.dart';
@@ -11,6 +12,7 @@ class RainbowMain extends StatefulWidget {
 
 class _RainbowMainState extends State<RainbowMain>
     with SingleTickerProviderStateMixin {
+  
   TabController _tabController;
   bool isVisibleMessageFAB = true;
   @override

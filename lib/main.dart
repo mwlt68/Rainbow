@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:rainbow/Views/Rainbow_main.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import 'core/locator.dart';
+
 void main() async{
-    WidgetsFlutterBinding.ensureInitialized();
+  setupLocator();
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MyApp());
 }

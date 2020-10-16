@@ -1,11 +1,26 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class ConversationPage extends StatefulWidget {
+  final String userId;
+  final String conversationId;
+
+  const ConversationPage({Key key, this.userId, this.conversationId}) : super(key: key);
   @override
   _ConversationPageState createState() => _ConversationPageState();
 }
 
 class _ConversationPageState extends State<ConversationPage> {
+    TextEditingController _textController;
+  CollectionReference _ref;
+  @override
+  void initState() {
+    final String  _collectionPath='Conversation/${widget.conversationId}/messages';
+    _ref=FirebaseFirestore.instance.collection(_collectionPath); 
+    _textController= new TextEditingController();
+    // TODO: implement initState
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,27 +75,35 @@ class _ConversationPageState extends State<ConversationPage> {
         child: Column(
           children: [
             Expanded(
-              child: ListView.builder(
-                  itemCount: 20,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      title: Align(
-                        alignment: index % 2 == 0
-                            ? Alignment.centerLeft
-                            : Alignment.centerRight,
-                        child: Container(
-                            padding: EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).accentColor,
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                            child: Text(
-                              "Merhaba",
-                              style: TextStyle(color: Colors.white),
-                            )),
-                      ),
-                    );
-                  }),
+              child: StreamBuilder<QuerySnapshot>(
+                stream: _ref.orderBy('timeStamp').snapshots(),
+                builder: (context, snapshot) {
+                  return 
+                  !snapshot.hasData ?
+                     CircularProgressIndicator() :
+                     ListView(
+                    children: snapshot.data.docs.map((e) =>  ListTile(
+                          title: Align(
+                            alignment: e['senderId']  == widget.userId
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            child: Container(
+                                padding: EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: e['senderId']  == widget.userId
+                                      ? Theme.of(context).accentColor
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                child: Text(
+                                  e['message'],
+                                  style: TextStyle(color: Colors.black),
+                                )),
+                          ),
+                        )).toList(),
+                  );
+                  }
+              ),
             ),
             Row(
               children: [
@@ -102,6 +125,7 @@ class _ConversationPageState extends State<ConversationPage> {
                       ),
                       Expanded(
                           child: TextField(
+                            controller: _textController,
                         decoration: InputDecoration(
                             hintText: "Write a message",
                             border: InputBorder.none),
@@ -117,14 +141,22 @@ class _ConversationPageState extends State<ConversationPage> {
                       )
                     ],
                   ),
-                )
-                ),
+                )),
                 Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).accentColor,
-                    shape: BoxShape.circle
-                  ),
-                  child: IconButton(icon: Icon(Icons.mic,color: Colors.white), onPressed: null,))
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        shape: BoxShape.circle),
+                    child: IconButton(
+                      icon: Icon(Icons.send, color: Colors.white),
+                      onPressed: () async {
+                        await _ref.add({
+                          'senderId':widget.userId,
+                          'message':_textController.text,
+                          'timeStamp':DateTime.now(),
+                        });
+                        _textController.text="";
+                      },
+                    ))
               ],
             ),
           ],
@@ -132,4 +164,5 @@ class _ConversationPageState extends State<ConversationPage> {
       ),
     );
   }
+  
 }
