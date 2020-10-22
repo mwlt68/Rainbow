@@ -1,21 +1,21 @@
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
+import 'package:rainbow/Dialogs/error_dialogs.dart';
 import 'package:rainbow/Views/conversation_page.dart';
-import 'package:rainbow/Widgets/error_widgets.dart';
 import 'package:rainbow/models/converstaion.dart';
 import 'package:rainbow/viewmodels/chat_model.dart';
 
 class ChatPage extends StatefulWidget {
+  ChatPage({this.user});
+  final User user;
   @override
   _ChatPageState createState() => _ChatPageState();
 }
 
 class _ChatPageState extends State<ChatPage> {
-  final String mevlutId="LpfLFzN0RsRU4lg2rot8ypyRw023";
-  final String phoneId="mpGlKzhNc8ZpPtvxFC9lRNjx46I2";
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -24,15 +24,18 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget getMessages() {
+    print("Phone number: "+widget.user.phoneNumber);
     var model =GetIt.instance<ChatModel>();
     return ChangeNotifierProvider(
         create: (BuildContext context)=>model,
         child: StreamBuilder<List<Conversation>>(
-          stream: model.conversations(mevlutId),
+          stream: model.conversations(widget.user.uid),
         builder: (context, AsyncSnapshot<List<Conversation>> snapshot) {
           if (snapshot.hasError) {
-            return BasicErrorWidget(
-                title: "Data could not load !", message: snapshot.error);
+            ShowErrorDialog(
+                context,
+                title: "Data could not load !",
+                message: snapshot.error);
           } else if (snapshot.connectionState == ConnectionState.waiting) {
             return CircularProgressIndicator();
           }
@@ -66,7 +69,7 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                       onTap: (){
                         Navigator.push(context,MaterialPageRoute(
-                          builder: (content)=>ConversationPage(userId: mevlutId,conversationId: conversation.id,))
+                          builder: (content)=>ConversationPage(userId: widget.user.uid,conversationId: conversation.id,))
                           );
                       },
                     ))

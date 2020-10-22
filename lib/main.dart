@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rainbow/Views/Rainbow_main.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:rainbow/Views/login_page.dart';
+import 'package:rainbow/core/services/auth_service.dart';
 
 import 'core/locator.dart';
 
@@ -21,7 +24,28 @@ class MyApp extends StatelessWidget {
         primaryColor: Color(0xff075e54),
         accentColor: Color(0xff25d336),
       ),
-      home: RainbowMain(),
+      home: checkLoginWidget(),
+    );
+  }
+  checkLoginWidget() {
+     return FutureBuilder(
+      future: MyAuth.getCurrentUser(),
+      builder: (context, AsyncSnapshot<User> snapshot) {
+        if (snapshot.connectionState == ConnectionState.done){
+          if (snapshot.hasData && snapshot.data != null) {
+              return RainbowMain(user: snapshot.data);
+              }
+          else{
+              return LoginPage();
+            }
+          
+        }
+        else if (snapshot.connectionState == ConnectionState.waiting){
+          return Center(
+            child:  CircularProgressIndicator(),
+          );
+        }
+      },
     );
   }
 }

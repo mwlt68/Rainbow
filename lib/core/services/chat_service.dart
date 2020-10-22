@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rainbow/models/converstaion.dart';
 
-class FirestoreDb{
+class ChatService{
   final FirebaseFirestore _fBaseFireStore=FirebaseFirestore.instance;
   Stream<List<Conversation>> getConversation(String userId){
     var ref=_fBaseFireStore.collection('Conversation').where('members',arrayContains: userId);
