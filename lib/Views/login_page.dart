@@ -6,6 +6,7 @@ import 'package:rainbow/Dialogs/error_dialogs.dart';
 import 'package:rainbow/Views/rainbow_main.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rainbow/user_register.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -219,12 +220,9 @@ class _LoginPageState extends State<LoginPage> {
                           User user = result.user;
 
                           if (user != null) {
-                            Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => RainbowMain(
-                                          user: user,
-                                        )),(Route<dynamic> route) => false,);
+                              UserRegister.checkUserRegisterS(context,user);
+                          //    dispose();
+                      
                           } else {
                             print("Verify code error");
                           }
@@ -237,6 +235,11 @@ class _LoginPageState extends State<LoginPage> {
               _scaffoldKey.currentState.hideCurrentSnackBar();
     Navigator.of(context).pop();
         });
+  }
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
   }
 
 }
