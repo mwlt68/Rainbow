@@ -15,6 +15,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final int _verifyDuration = 60;
+  bool _didVeriftFinish=true; 
   final _formKey = GlobalKey<FormState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _codeController = TextEditingController();
@@ -141,6 +142,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<bool> _verifyPhoneNumber(String phone, BuildContext context) async {
+    _didVeriftFinish=false;
     FirebaseAuth _auth = FirebaseAuth.instance;
     _auth.verifyPhoneNumber(
         phoneNumber: phone,
@@ -209,6 +211,7 @@ class _LoginPageState extends State<LoginPage> {
                         textColor: Colors.white,
                         color: Colors.blue,
                         onPressed: () async {
+                          _didVeriftFinish=true;
                           final code = _codeController.text.trim();
                           AuthCredential credential =
                               PhoneAuthProvider.credential(
@@ -221,7 +224,6 @@ class _LoginPageState extends State<LoginPage> {
 
                           if (user != null) {
                               UserRegister.checkUserRegisterS(context,user);
-                          //    dispose();
                       
                           } else {
                             print("Verify code error");
@@ -232,8 +234,10 @@ class _LoginPageState extends State<LoginPage> {
               });
         },
         codeAutoRetrievalTimeout: (String verificationId) {
+          if(_didVeriftFinish){
               _scaffoldKey.currentState.hideCurrentSnackBar();
-    Navigator.of(context).pop();
+              Navigator.of(context).pop();
+          }
         });
   }
   @override

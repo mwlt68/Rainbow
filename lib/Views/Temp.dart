@@ -9,7 +9,7 @@ class temp2widget extends StatefulWidget {
 
 class _temp2widgetState extends State<temp2widget> {
   UserInfoService infoService= new UserInfoService();
-  User user = new User(
+  MyUser user = new MyUser(
     userId:"TA7ctTq6TohulbhQW0gNNOm1l3A3",
     imgSrc: DefaultData.UserDefaultImagePath,
     name: "Mahmut Atak",

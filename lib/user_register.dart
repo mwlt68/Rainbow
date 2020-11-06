@@ -1,19 +1,24 @@
-import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-import 'Dialogs/error_dialogs.dart';
+import 'package:rainbow/Views/user_register_page.dart';
 import 'Views/rainbow_main.dart';
 import 'core/services/user_info_service.dart';
 
 class UserRegister {
   static checkUserRegisterS(context, User user){
     UserInfoService infoService = new UserInfoService();
-    var a = infoService.getUserFromUserId(user.uid);
-    return a.listen((event) {
+    var userStream = infoService.getUserFromUserId(user.uid);
+    userStream.listen((event) {
+      
       if (event == null) {
-        Text("register");
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+              builder: (context) => UserRegisterPage(
+                    user: user,
+                  )),
+          (Route<dynamic> route) => false,
+        );
       } else {
         Navigator.pushAndRemoveUntil(
           context,
@@ -24,28 +29,21 @@ class UserRegister {
           (Route<dynamic> route) => false,
         );
       }
-    });
+    }).cancel();
   }
   static checkUserRegisterSB(context, User user) {
     UserInfoService infoService = new UserInfoService();
     return StreamBuilder(
         stream: infoService.getUserFromUserId(user.uid),
         builder: (builder, snapshot) {
-          if (snapshot.hasError) {
-            ShowErrorDialog(builder,
-                title: "User Access Error", message: snapshot.error);
-          } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
-          } else if (snapshot.hasData) {
-            if (snapshot.data == null) {
-              //User register
-              return Text("register");
-            } else {
-              //Continue
-              return RainbowMain(
+          if (snapshot.hasData) {
+                          return RainbowMain(
                 user: user,
               );
-            }
+          } else if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          } else if (!snapshot.hasData) {
+              return UserRegisterPage(user:user);
           }
         });
   }

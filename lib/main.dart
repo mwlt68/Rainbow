@@ -1,16 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:rainbow/Dialogs/error_dialogs.dart';
-import 'package:rainbow/Views/Rainbow_main.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:rainbow/Views/Temp.dart';
 import 'package:rainbow/Views/login_page.dart';
 import 'package:rainbow/core/services/auth_service.dart';
 import 'package:rainbow/user_register.dart';
 
-import 'core/contact_permission.dart';
+import 'Views/user_register_page.dart';
 import 'core/locator.dart';
-import 'core/services/user_info_service.dart';
 
 void main() async{
   setupLocator();
