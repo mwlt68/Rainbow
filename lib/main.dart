@@ -8,7 +8,7 @@ import 'package:rainbow/user_register.dart';
 import 'Views/user_register_page.dart';
 import 'core/locator.dart';
 
-void main() async{
+void main() async {
   setupLocator();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -25,29 +25,28 @@ class MyApp extends StatelessWidget {
         primaryColor: Color(0xff075e54),
         accentColor: Color(0xff25d336),
       ),
-      home:checkLoginWidget(),
+      home: checkLoginWidget(),
     );
   }
+
   checkLoginWidget() {
-     return FutureBuilder(
+    return FutureBuilder(
       future: MyAuth.getCurrentUser(),
       builder: (context, AsyncSnapshot<User> snapshot) {
-        if (snapshot.connectionState == ConnectionState.done){
+        if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData && snapshot.data != null) {
-                return UserRegister.checkUserRegisterSB(context,snapshot.data);
-              }
-          else{
-              return LoginPage();
-            }
-          
-        }
-        else if (snapshot.connectionState == ConnectionState.waiting){
+            return UserRegisterPage(
+              user: snapshot.data,
+            );
+          } else {
+            return LoginPage();
+          }
+        } else if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
-            child:  CircularProgressIndicator(),
+            child: CircularProgressIndicator(),
           );
         }
       },
     );
   }
-  
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/models/user.dart';
-import 'package:rainbow/core/services/user_info_service.dart';
+/*
 class temp2widget extends StatefulWidget {
   @override
   _temp2widgetState createState() => _temp2widgetState();
@@ -34,7 +34,7 @@ class _temp2widgetState extends State<temp2widget> {
     );
   }
 }
-/*
+
 class tempWidget extends StatefulWidget {
   @override
   _tempWidgetState createState() => _tempWidgetState();

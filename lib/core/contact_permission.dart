@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/cupertino.dart';
 
-import 'contact_page.dart';
+import 'contact_page2.dart';
 
 class SeeContactsButton extends StatelessWidget {
   @override

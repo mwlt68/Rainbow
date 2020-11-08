@@ -1,12 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rainbow/Views/user_register_page.dart';
+import 'package:rainbow/core/services/user_service.dart';
 import 'Views/rainbow_main.dart';
-import 'core/services/user_info_service.dart';
 
 class UserRegister {
   static checkUserRegisterS(context, User user){
-    UserInfoService infoService = new UserInfoService();
+    UserService infoService = new UserService();
     var userStream = infoService.getUserFromUserId(user.uid);
     userStream.listen((event) {
       
@@ -32,12 +32,12 @@ class UserRegister {
     }).cancel();
   }
   static checkUserRegisterSB(context, User user) {
-    UserInfoService infoService = new UserInfoService();
+    UserService infoService = new UserService();
     return StreamBuilder(
         stream: infoService.getUserFromUserId(user.uid),
         builder: (builder, snapshot) {
           if (snapshot.hasData) {
-                          return RainbowMain(
+              return RainbowMain(
                 user: user,
               );
           } else if (snapshot.connectionState == ConnectionState.waiting) {

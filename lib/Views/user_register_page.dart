@@ -1,13 +1,15 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:rainbow/Dialogs/error_dialogs.dart';
 import 'package:rainbow/Views/rainbow_main.dart';
 import 'package:rainbow/core/default_data.dart';
-import 'package:rainbow/core/services/user_info_service.dart';
+import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/models/user.dart';
+import 'package:rainbow/viewmodels/user_model.dart';
 import 'package:rainbow/widgets/widgets.dart';
 
 class UserRegisterPage extends StatefulWidget {
@@ -18,7 +20,6 @@ class UserRegisterPage extends StatefulWidget {
 }
 
 class _UserRegisterPageState extends State<UserRegisterPage> {
-  
   final GlobalKey<ScaffoldState> _scaffoldkey = new GlobalKey<ScaffoldState>();
   TextEditingController visiableNameTEC;
   TextEditingController statusTEC;
@@ -34,7 +35,27 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    var model =getIt<UserModel>();
+    return ChangeNotifierProvider(
+      create:(BuildContext context) => model,
+      child:StreamBuilder<MyUser>(
+        stream: model.getMyUserFromUserId(widget.user.uid),
+        builder: (context, AsyncSnapshot<MyUser> snapshot){
+            if (snapshot.hasData) {
+              return RainbowMain(
+                user: widget.user,
+              );
+          } else if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          } else if (!snapshot.hasData) {
+              return _getPage;
+          }
+        }
+      )
+    );
+    
+  }
+  Widget get _getPage=>Scaffold(
       key: _scaffoldkey,
       appBar: AppBar(
         title: Text(DefaultData.UserRegister),
@@ -49,16 +70,15 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
             children: [
               getImagePicker,
               MyWidgets.getCustomTextView(
-                  visiableNameTEC, DefaultData.VisiableName,"Nameless"),
-              MyWidgets.getCustomTextView(statusTEC, DefaultData.Status,DefaultData.UserDefaultStatus),
+                  visiableNameTEC, DefaultData.VisiableName, "Nameless"),
+              MyWidgets.getCustomTextView(
+                  statusTEC, DefaultData.Status, DefaultData.UserDefaultStatus),
               MyWidgets.getFlatButton(context, "Continue", _continueBtnClick),
             ],
           ))
         ],
       ),
     );
-  }
-
   Widget get getImagePicker => GestureDetector(
         onTap: () {
           _showPicker(context);
@@ -146,46 +166,35 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
   void _continueBtnClick() {
     var check = _checkTECValidation();
     if (check) {
-      UserInfoService infoService = new UserInfoService();
-      MyUser myUser = new MyUser(
-          userId: widget.user.uid,
-          phoneNumber: widget.user.phoneNumber,
-          name: visiableNameTEC.text,
-          status: statusTEC.text,);
-      if (_image==null) {
-        myUser.imgSrc= DefaultData.UserDefaultImagePath;
-        saveUser(infoService, myUser);
-      } else {
-        infoService.uploadMedia(_image).then((value){
-          myUser.imgSrc= value;
-          saveUser(infoService, myUser);
-          });
-      }
-      
+      registerUser();
     } else {}
-     }
-  void saveUser(UserInfoService infoService, MyUser myUser){
-    FutureBuilder<bool>(
-        future: infoService.registerUser(myUser),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            ShowErrorDialog(context,
-                title: "Save Error", message: snapshot.error);
-          } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
-          } else if (snapshot.data) {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => RainbowMain(
-                        user: widget.user,
-                      )),
-              (Route<dynamic> route) => false,
-            );
-          }
-        },
-      );
   }
+
+  void registerUser() {
+    UserModel userModel = new UserModel();
+    FutureBuilder<DocumentReference>(
+      future: userModel.registerUser(
+          widget.user, _image, visiableNameTEC.text, statusTEC.text),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+                builder: (context) => RainbowMain(
+                      user: widget.user,
+                    )),
+            (Route<dynamic> route) => false,
+          );
+        } else if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          ShowErrorDialog(context,
+              title: "Save Error", message: snapshot.error);
+        }
+      },
+    );
+  }
+
   bool _checkTECValidation() {
     if (visiableNameTEC.text.length > 0 && statusTEC.text.length > 0) {
       return true;

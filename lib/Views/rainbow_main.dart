@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:rainbow/Views/calls_page.dart';
 import 'package:rainbow/Views/camera_page.dart';
 import 'package:rainbow/Views/chat_page.dart';
+import 'package:rainbow/Views/contact_page.dart';
 import 'package:rainbow/Views/login_page.dart';
 import 'package:rainbow/Views/status_page.dart';
 import 'package:rainbow/core/services/auth_service.dart';
@@ -86,7 +87,15 @@ class _RainbowMainState extends State<RainbowMain>
           visible: isVisibleMessageFAB,
           child: FloatingActionButton(
             child: Icon(Icons.message),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+              builder: (context) => ContactPage(
+                  )),
+          (Route<dynamic> route) => false,
+        );
+            },
           ),
         ));
   }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rainbow/Dialogs/error_dialogs.dart';
 import 'package:rainbow/Views/rainbow_main.dart';
+import 'package:rainbow/Views/user_register_page.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rainbow/user_register.dart';
@@ -15,7 +16,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final int _verifyDuration = 60;
-  bool _didVeriftFinish=true; 
+  bool _didVeriftFinish = true;
   final _formKey = GlobalKey<FormState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _codeController = TextEditingController();
@@ -142,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<bool> _verifyPhoneNumber(String phone, BuildContext context) async {
-    _didVeriftFinish=false;
+    _didVeriftFinish = false;
     FirebaseAuth _auth = FirebaseAuth.instance;
     _auth.verifyPhoneNumber(
         phoneNumber: phone,
@@ -154,6 +155,7 @@ class _LoginPageState extends State<LoginPage> {
           User user = result.user;
 
           if (user != null) {
+            print("Okey2");
             Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -201,7 +203,7 @@ class _LoginPageState extends State<LoginPage> {
                       TextField(
                           controller: _codeController,
                           decoration: InputDecoration(
-                            labelText: DefaultData.PhoneNumber,
+                            labelText: "Verify Code",
                           )),
                     ],
                   ),
@@ -211,7 +213,7 @@ class _LoginPageState extends State<LoginPage> {
                         textColor: Colors.white,
                         color: Colors.blue,
                         onPressed: () async {
-                          _didVeriftFinish=true;
+                          _didVeriftFinish = true;
                           final code = _codeController.text.trim();
                           AuthCredential credential =
                               PhoneAuthProvider.credential(
@@ -221,10 +223,15 @@ class _LoginPageState extends State<LoginPage> {
                               await _auth.signInWithCredential(credential);
 
                           User user = result.user;
-
                           if (user != null) {
-                              UserRegister.checkUserRegisterS(context,user);
-                      
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => UserRegisterPage(
+                                        user: user,
+                                      )),
+                              (Route<dynamic> route) => false,
+                            );
                           } else {
                             print("Verify code error");
                           }
@@ -234,16 +241,16 @@ class _LoginPageState extends State<LoginPage> {
               });
         },
         codeAutoRetrievalTimeout: (String verificationId) {
-          if(_didVeriftFinish){
-              _scaffoldKey.currentState.hideCurrentSnackBar();
-              Navigator.of(context).pop();
+          if (_didVeriftFinish) {
+            _scaffoldKey.currentState.hideCurrentSnackBar();
+            Navigator.of(context).pop();
           }
         });
   }
+
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
   }
-
 }
