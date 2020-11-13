@@ -8,9 +8,10 @@ class UserService{
     var ref=_fBaseFireStore.collection('Users').where('userId',isEqualTo:userId);
     return ref.snapshots().map((event) => MyUser.fromSnaphot(event.docs[0]));
   }
-  Stream<MyUser> getUserFromUserPhoneNumber(String phoneNumber){
+  Stream<MyUser> getUserFromUserPhoneNumber(String phoneNumber)  {
     var ref=_fBaseFireStore.collection('Users').where('phoneNumber',isEqualTo:phoneNumber);
-    return ref.snapshots().map((event) => MyUser.fromSnaphot(event.docs[0]));
+    var res= ref.snapshots().map((event) => MyUser.fromSnaphot(event.docs[0]));
+    return res;
   }
   Future<DocumentReference> registerUser(MyUser user) async {
     var ref=_fBaseFireStore.collection('Users');

@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
-import 'package:get_it/get_it.dart';
+import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/services/chat_service.dart';
 import 'package:rainbow/models/converstaion.dart';
 
 class ChatModel with ChangeNotifier{
-  final ChatService _db=GetIt.instance<ChatService>();
+  final ChatService _chatService=getIt<ChatService>();
   Stream<List<Conversation>> conversations (String userId){
-    return _db.getConversation(userId);
+    return _chatService.getConversation(userId);
   }
 }

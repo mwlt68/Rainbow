@@ -3,6 +3,7 @@ import 'package:rainbow/core/services/chat_service.dart';
 import 'package:rainbow/core/services/storage_service.dart';
 import 'package:rainbow/core/services/user_service.dart';
 import 'package:rainbow/viewmodels/chat_model.dart';
+import 'package:rainbow/viewmodels/contact_model.dart';
 import 'package:rainbow/viewmodels/user_model.dart';
 
 GetIt getIt =  GetIt.instance;
@@ -13,4 +14,5 @@ setupLocator(){
 
   getIt.registerFactory(() => ChatModel());
   getIt.registerFactory(() => UserModel());
+  getIt.registerFactory(() => ContactModel());
 }
