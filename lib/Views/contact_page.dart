@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow/Dialogs/error_dialogs.dart';
+import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/models/user.dart';
 import 'package:rainbow/viewmodels/contact_model.dart';
@@ -20,19 +21,25 @@ class ContactPage extends StatelessWidget {
           IconButton(icon: Icon(Icons.more_vert), onPressed: null),
         ],
       ),
-      body: getContact(),
+      body: ContactsList(),
     );
   }
-
+}
+class ContactsList extends StatelessWidget {
+  final String query;
+  ContactsList({
+    Key key,
+    this.query,
+  }) : super(key: key);
   List<MyUser> users = new List<MyUser>();
 
-  Widget getContact({String query}) {
+  Widget build(BuildContext context) {
     var model = getIt<ContactModel>();
     return FutureBuilder(
         future: model.getContatcs(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return getNotifier(model, query: query);
+            return _getNotifier(model, query: query);
           } else if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
@@ -42,8 +49,7 @@ class ContactPage extends StatelessWidget {
           }
         });
   }
-
-  ChangeNotifierProvider getNotifier(ContactModel model, {String query}) {
+  ChangeNotifierProvider _getNotifier(ContactModel model, {String query}) {
     return ChangeNotifierProvider(
       create: (BuildContext context) => model,
       child: StreamBuilder<MyUser>(
@@ -62,21 +68,23 @@ class ContactPage extends StatelessWidget {
           }),
     );
   }
+
 }
 
 ListView _getListView(List<MyUser> contactUsers, String query) {
   if (query != null) {
+    List<MyUser> tempUsers= new List<MyUser>();
     for (var user in contactUsers) {
       if (!user.name.contains(query)) {
-        contactUsers.remove(user);
+        tempUsers.add(user);
       }
     }
+    contactUsers=tempUsers;
   }
   List<ListTile> tiles = new List<ListTile>();
   for (var user in contactUsers) {
     ListTile tile = new ListTile(
       leading: CircleAvatar(
-        backgroundColor: Colors.red,
         backgroundImage: NetworkImage(user.imgSrc),
       ),
       title: Text(user.name),
@@ -99,27 +107,26 @@ class ContactSearchDelegate extends SearchDelegate {
 
   @override
   List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          })
-    ];
+    return [];
   }
 
   @override
   Widget buildLeading(BuildContext context) {
-    return Container();
+    return IconButton(
+      icon: Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, null);
+      },
+    );
   }
 
   @override
   Widget buildResults(BuildContext context) {
-    return Container();
+    return ContactsList(query:query);
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    return Container();
+    return Text(DefaultData.buildSuggestionText);
   }
 }

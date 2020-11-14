@@ -123,10 +123,9 @@ class _RainbowMainState extends State<RainbowMain>
         child: FloatingActionButton(
           child: Icon(Icons.message),
           onPressed: () {
-            Navigator.pushAndRemoveUntil(
+            Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => ContactPage()),
-              (Route<dynamic> route) => false,
             );
           },
         ),

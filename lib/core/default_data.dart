@@ -11,7 +11,8 @@ class DefaultData {
   static const String VisiableName="Visiable Name";
   static const String Status="Status";
   static const String TECInvalidText=UserRegister+" or "+VisiableName+" can not blank !";
-
+  // Contact Page
+  static const buildSuggestionText ="Please search a keyword.";
   //Shared Preferences
   static const String SPUserIdKey="UserId";
   // Validater Hint Texts

@@ -12,6 +12,7 @@ import 'package:rainbow/viewmodels/base_model.dart';
 class UserModel extends BaseModel {
   final UserService _userService = getIt<UserService>();
   final StorageService _storageService = getIt<StorageService>();
+  
   Stream<MyUser> getMyUserFromUserId(String userId) {
     return _userService.getUserFromUserId(userId);
   }

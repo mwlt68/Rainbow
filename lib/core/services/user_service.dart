@@ -4,6 +4,7 @@ import 'package:rainbow/models/user.dart';
 class UserService{
   
   final FirebaseFirestore _fBaseFireStore=FirebaseFirestore.instance;
+  
   Stream<MyUser> getUserFromUserId(String userId){
     var ref=_fBaseFireStore.collection('Users').where('userId',isEqualTo:userId);
     return ref.snapshots().map((event) => MyUser.fromSnaphot(event.docs[0]));
