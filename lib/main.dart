@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:rainbow/Views/login_page.dart';
 import 'package:rainbow/core/services/auth_service.dart';
+import 'package:rainbow/core/services/navigator_service.dart';
 import 'package:rainbow/user_register.dart';
 
 import 'Views/user_register_page.dart';
@@ -21,9 +22,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Rainbow',
+      navigatorKey: getIt<NavigatorService>().navigatorKey,
       theme: ThemeData(
         primaryColor: Color(0xff075e54),
         accentColor: Color(0xff25d336),
+        
       ),
       home: checkLoginWidget(),
     );

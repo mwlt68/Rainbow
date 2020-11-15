@@ -4,6 +4,8 @@ import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow/Dialogs/error_dialogs.dart';
 import 'package:rainbow/Views/conversation_page.dart';
+import 'package:rainbow/core/locator.dart';
+import 'package:rainbow/core/services/navigator_service.dart';
 import 'package:rainbow/models/converstaion.dart';
 import 'package:rainbow/viewmodels/chat_model.dart';
 
@@ -15,6 +17,8 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
+  final   NavigatorService _navigatorService= getIt<NavigatorService>();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -64,13 +68,9 @@ class _ChatPageState extends State<ChatPage> {
                           ],
                         ),
                         onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (content) => ConversationPage(
+                          _navigatorService.navigateTo( ConversationPage(
                                         userId: widget.user.uid,
-                                        conversationId: conversation.id,
-                                      )));
+                                        conversationId: conversation.id,));
                         },
                       ))
                   .toList(),

@@ -8,6 +8,7 @@ import 'package:rainbow/Dialogs/error_dialogs.dart';
 import 'package:rainbow/Views/rainbow_main.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
+import 'package:rainbow/core/services/navigator_service.dart';
 import 'package:rainbow/models/user.dart';
 import 'package:rainbow/viewmodels/user_model.dart';
 import 'package:rainbow/widgets/widgets.dart';
@@ -20,6 +21,8 @@ class UserRegisterPage extends StatefulWidget {
 }
 
 class _UserRegisterPageState extends State<UserRegisterPage> {
+  final NavigatorService _navigatorService = getIt<NavigatorService>();
+
   final GlobalKey<ScaffoldState> _scaffoldkey = new GlobalKey<ScaffoldState>();
   TextEditingController visiableNameTEC;
   TextEditingController statusTEC;
@@ -35,50 +38,48 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    var model =getIt<UserModel>();
+    var model = getIt<UserModel>();
     return ChangeNotifierProvider(
-      create:(BuildContext context) => model,
-      child:StreamBuilder<MyUser>(
-        stream: model.getMyUserFromUserId(widget.user.uid),
-        builder: (context, AsyncSnapshot<MyUser> snapshot){
-            if (snapshot.hasData) {
-              return RainbowMain(
-                user: widget.user,
-              );
-          } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
-          } else if (!snapshot.hasData) {
-              return _getPage;
-          }
-        }
-      )
-    );
-    
+        create: (BuildContext context) => model,
+        child: StreamBuilder<MyUser>(
+            stream: model.getMyUserFromUserId(widget.user.uid),
+            builder: (context, AsyncSnapshot<MyUser> snapshot) {
+              if (snapshot.hasData) {
+                return RainbowMain(
+                  user: widget.user,
+                );
+              } else if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator();
+              } else if (!snapshot.hasData) {
+                return _getPage;
+              }
+            }));
   }
-  Widget get _getPage=>Scaffold(
-      key: _scaffoldkey,
-      appBar: AppBar(
-        title: Text(DefaultData.UserRegister),
-      ),
-      body: ListView(
-        children: <Widget>[
-          SizedBox(
-            height: 32,
-          ),
-          Center(
-              child: Column(
-            children: [
-              getImagePicker,
-              MyWidgets.getCustomTextView(
-                  visiableNameTEC, DefaultData.VisiableName, "Nameless"),
-              MyWidgets.getCustomTextView(
-                  statusTEC, DefaultData.Status, DefaultData.UserDefaultStatus),
-              MyWidgets.getFlatButton(context, "Continue", _continueBtnClick),
-            ],
-          ))
-        ],
-      ),
-    );
+
+  Widget get _getPage => Scaffold(
+        key: _scaffoldkey,
+        appBar: AppBar(
+          title: Text(DefaultData.UserRegister),
+        ),
+        body: ListView(
+          children: <Widget>[
+            SizedBox(
+              height: 32,
+            ),
+            Center(
+                child: Column(
+              children: [
+                getImagePicker,
+                MyWidgets.getCustomTextView(
+                    visiableNameTEC, DefaultData.VisiableName, "Nameless"),
+                MyWidgets.getCustomTextView(statusTEC, DefaultData.Status,
+                    DefaultData.UserDefaultStatus),
+                MyWidgets.getFlatButton(context, "Continue", _continueBtnClick),
+              ],
+            ))
+          ],
+        ),
+      );
   Widget get getImagePicker => GestureDetector(
         onTap: () {
           _showPicker(context);
@@ -177,14 +178,11 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
           widget.user, _image, visiableNameTEC.text, statusTEC.text),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-                builder: (context) => RainbowMain(
-                      user: widget.user,
-                    )),
-            (Route<dynamic> route) => false,
-          );
+          _navigatorService.navigateTo(
+              RainbowMain(
+                user: widget.user,
+              ),
+              isRemoveUntil: true);
         } else if (snapshot.connectionState == ConnectionState.waiting) {
           return CircularProgressIndicator();
         } else if (snapshot.hasError) {

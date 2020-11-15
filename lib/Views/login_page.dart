@@ -7,6 +7,8 @@ import 'package:rainbow/Views/rainbow_main.dart';
 import 'package:rainbow/Views/user_register_page.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rainbow/core/locator.dart';
+import 'package:rainbow/core/services/navigator_service.dart';
 import 'package:rainbow/user_register.dart';
 
 class LoginPage extends StatefulWidget {
@@ -15,6 +17,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final   NavigatorService _navigatorService= getIt<NavigatorService>();
+
   final int _verifyDuration = 60;
   bool _didVeriftFinish = true;
   final _formKey = GlobalKey<FormState>();
@@ -155,13 +159,9 @@ class _LoginPageState extends State<LoginPage> {
           User user = result.user;
 
           if (user != null) {
-            print("Okey2");
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => RainbowMain(
+            _navigatorService.navigateTo( RainbowMain(
                           user: user,
-                        )));
+                        ));
           } else {
             print("object");
           }
@@ -224,14 +224,7 @@ class _LoginPageState extends State<LoginPage> {
 
                           User user = result.user;
                           if (user != null) {
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => UserRegisterPage(
-                                        user: user,
-                                      )),
-                              (Route<dynamic> route) => false,
-                            );
+                                    _navigatorService.navigateTo(UserRegisterPage(user: user),isRemoveUntil: true);
                           } else {
                             print("Verify code error");
                           }

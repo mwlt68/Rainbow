@@ -12,6 +12,7 @@ import 'package:rainbow/Views/login_page.dart';
 import 'package:rainbow/Views/status_page.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/services/auth_service.dart';
+import 'package:rainbow/core/services/navigator_service.dart';
 import 'package:rainbow/viewmodels/contact_model.dart';
 
 class RainbowMain extends StatefulWidget {
@@ -23,6 +24,8 @@ class RainbowMain extends StatefulWidget {
 
 class _RainbowMainState extends State<RainbowMain>
     with SingleTickerProviderStateMixin {
+  
+  final   NavigatorService _navigatorService= getIt<NavigatorService>();
   TabController _tabController;
   bool isVisibleMessageFAB = true;
   @override
@@ -123,10 +126,7 @@ class _RainbowMainState extends State<RainbowMain>
         child: FloatingActionButton(
           child: Icon(Icons.message),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ContactPage()),
-            );
+            _navigatorService.navigateTo(ContactPage());
           },
         ),
       ));
@@ -154,10 +154,6 @@ class _RainbowMainState extends State<RainbowMain>
 
   void _singOut() {
     MyAuth.signOut();
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => LoginPage()),
-      (Route<dynamic> route) => false,
-    );
+            _navigatorService.navigateTo(LoginPage(),isRemoveUntil: true);
   }
 }
