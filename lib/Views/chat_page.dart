@@ -21,7 +21,6 @@ class _ChatPageState extends State<ChatPage> {
       child: getMessages(),
     );
   }
-
   Widget getMessages() {
     var model = GetIt.instance<ChatModel>();
     return ChangeNotifierProvider(

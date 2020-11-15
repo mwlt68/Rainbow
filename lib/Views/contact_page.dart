@@ -5,10 +5,12 @@ import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/models/user.dart';
 import 'package:rainbow/viewmodels/contact_model.dart';
+import 'package:rainbow/widgets/widgets.dart';
 
 class ContactPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    var contactListWidget=ContactsList(query: "",);
     return Scaffold(
       appBar: AppBar(
         title: Text("Contact"),
@@ -16,22 +18,23 @@ class ContactPage extends StatelessWidget {
           IconButton(
               icon: Icon(Icons.search),
               onPressed: () {
-                showSearch(context: context, delegate: ContactSearchDelegate());
+                showSearch(context: context, delegate: ContactSearchDelegate(contactListWidget));
               }),
           IconButton(icon: Icon(Icons.more_vert), onPressed: null),
         ],
       ),
-      body: ContactsList(),
+      body: Center(child: contactListWidget),
     );
   }
 }
+
 class ContactsList extends StatelessWidget {
-  final String query;
+  String query;
+  List<MyUser> myUsers;
   ContactsList({
     Key key,
     this.query,
   }) : super(key: key);
-  List<MyUser> users = new List<MyUser>();
 
   Widget build(BuildContext context) {
     var model = getIt<ContactModel>();
@@ -39,66 +42,64 @@ class ContactsList extends StatelessWidget {
         future: model.getContatcs(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return _getNotifier(model, query: query);
+            return getMessages(model);
           } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return  CircularProgressIndicator();
           } else if (snapshot.hasError) {
-            return Center(
-              child: Text("Contact users get error !"),
-            );
-          }
+            return Text("Contact users get error !");
+                      }
         });
   }
-  ChangeNotifierProvider _getNotifier(ContactModel model, {String query}) {
+
+  Widget getMessages(ContactModel model) {
     return ChangeNotifierProvider(
       create: (BuildContext context) => model,
-      child: StreamBuilder<MyUser>(
-          stream: model.getMyUsersFromContact(),
-          builder: (context, AsyncSnapshot<MyUser> snapshot) {
-            if (snapshot.hasData) {
-              users.add(snapshot.data);
-              return _getListView(users, query);
+      child: StreamBuilder<List<MyUser>>(
+          stream: model.getMyUser(),
+          builder: (context, AsyncSnapshot<List<MyUser>> snapshot) {
+            if (snapshot.hasError) {
+              ShowErrorDialog(context,
+                  title: "Data could not load !", message: snapshot.error);
             } else if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(
-                child: Text("Contact users get error !"),
-              );
+              return CircularProgressIndicator();
             }
+            myUsers=snapshot.data;
+            myUsers.sort((a,b)=> a.name.toString().compareTo(b.name.toString()));
+            return Center(child: getListView());
           }),
     );
   }
-
-}
-
-ListView _getListView(List<MyUser> contactUsers, String query) {
-  if (query != null) {
-    List<MyUser> tempUsers= new List<MyUser>();
-    for (var user in contactUsers) {
-      if (!user.name.contains(query)) {
-        tempUsers.add(user);
+  ListView getListView(){
+    List<ListTile> tiles= new List<ListTile>();
+    for (var myUser in myUsers) {
+      var tile = _getListTile(myUser);
+      if(tile != null){
+        tiles.add(tile);
       }
     }
-    contactUsers=tempUsers;
-  }
-  List<ListTile> tiles = new List<ListTile>();
-  for (var user in contactUsers) {
-    ListTile tile = new ListTile(
-      leading: CircleAvatar(
-        backgroundImage: NetworkImage(user.imgSrc),
-      ),
-      title: Text(user.name),
-      subtitle: Text(user.status),
-      //              onTap: () => model.startConversation(user, profile),
+    return ListView(
+      children: tiles.length == 0 ? [ MyWidgets.getPureText(DefaultData.ElementNotFound)] : tiles,
     );
-    tiles.add(tile);
   }
-  return ListView(
-    children: tiles,
-  );
-}
+  ListTile _getListTile(MyUser myUser) {
+    String name=myUser.name.toLowerCase();
+    String query2=query== null ? "":query.toLowerCase(); 
+    if(name.contains(query2)){
+      return ListTile(
+      leading: CircleAvatar(
+        backgroundImage: NetworkImage(myUser.imgSrc),
+      ),
+      title: Text(myUser.name),
+      subtitle: Text(myUser.status),
+        onTap: () {},
+      );
+    }
+  }
 
+}
 class ContactSearchDelegate extends SearchDelegate {
+  final ContactsList contactsList;
+  ContactSearchDelegate(this.contactsList);
   @override
   ThemeData appBarTheme(BuildContext context) {
     var theme = Theme.of(context);
@@ -108,6 +109,7 @@ class ContactSearchDelegate extends SearchDelegate {
   @override
   List<Widget> buildActions(BuildContext context) {
     return [];
+
   }
 
   @override
@@ -115,18 +117,20 @@ class ContactSearchDelegate extends SearchDelegate {
     return IconButton(
       icon: Icon(Icons.arrow_back),
       onPressed: () {
-        close(context, null);
+        this.close(context, null);
       },
     );
   }
 
   @override
   Widget buildResults(BuildContext context) {
-    return ContactsList(query:query);
+    contactsList.query=query;
+    return contactsList.getListView();
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    return Text(DefaultData.buildSuggestionText);
+    contactsList.query=query;
+    return contactsList.getListView();
   }
 }

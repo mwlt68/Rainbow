@@ -12,7 +12,7 @@ class DefaultData {
   static const String Status="Status";
   static const String TECInvalidText=UserRegister+" or "+VisiableName+" can not blank !";
   // Contact Page
-  static const buildSuggestionText ="Please search a keyword.";
+  static const ElementNotFound ="An element matching your search was not found.";
   //Shared Preferences
   static const String SPUserIdKey="UserId";
   // Validater Hint Texts

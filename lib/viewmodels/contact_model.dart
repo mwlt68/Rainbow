@@ -5,7 +5,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:rainbow/core/services/user_service.dart';
 import 'package:rainbow/models/user.dart';
 import 'package:rainbow/viewmodels/base_model.dart';
-import 'package:async/async.dart' show StreamGroup;
 
 class ContactModel extends BaseModel {
   UserService _userService = new UserService();
@@ -14,22 +13,15 @@ class ContactModel extends BaseModel {
     contacts=await ContactsService.getContacts();
     return true;
   }
-  Stream<MyUser> getMyUsersFromContact() {
-    final streams = new List<Stream<MyUser>>();
+
+  Stream<List<MyUser>> getMyUser(){
+    List<String> phoneNumbers=[];
     for (var contact in contacts) {
-      String number = getPhoneNumberBeaty(contact.phones.elementAt(0));
-      Stream<MyUser> stream = _userService.getUserFromUserPhoneNumber(number);
-      streams.add(stream);
+      String number = _getPhoneNumberBeaty(contact.phones.elementAt(0));
+      phoneNumbers.add(number);
     }
-    final stream = StreamGroup.merge(streams);
-    return stream;
+    return _userService.getUserFromUserPhoneNumbers(phoneNumbers);
   }
-
-  String getPhoneNumberBeaty(Item contact) {
-    String number = contact.value.replaceAll(' ', '').replaceAll('-', '');
-    return number;
-  }
-
   Future<PermissionStatus> getPermission() async {
     final PermissionStatus permission = await Permission.contacts.status;
     if (permission != PermissionStatus.granted &&
@@ -41,5 +33,10 @@ class ContactModel extends BaseModel {
     } else {
       return permission;
     }
+  }
+
+  String _getPhoneNumberBeaty(Item contact) {
+    String number = contact.value.replaceAll(' ', '').replaceAll('-', '');
+    return number;
   }
 }

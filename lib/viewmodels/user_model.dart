@@ -16,6 +16,9 @@ class UserModel extends BaseModel {
   Stream<MyUser> getMyUserFromUserId(String userId) {
     return _userService.getUserFromUserId(userId);
   }
+  Stream<MyUser> getMyUserFromPhoneNumber(String number) {
+    return _userService.getUserFromUserPhoneNumber(number);
+  }
   Future<DocumentReference> registerUser(
       User user, File imgFile, String visiableName, String status) async {
     MyUser myUser = new MyUser(
