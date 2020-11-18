@@ -9,7 +9,6 @@ import 'package:rainbow/core/default_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/services/navigator_service.dart';
-import 'package:rainbow/user_register.dart';
 
 class LoginPage extends StatefulWidget {
   @override

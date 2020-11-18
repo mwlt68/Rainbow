@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:rainbow/Views/login_page.dart';
 import 'package:rainbow/core/services/auth_service.dart';
 import 'package:rainbow/core/services/navigator_service.dart';
-import 'package:rainbow/user_register.dart';
 
 import 'Views/user_register_page.dart';
 import 'core/locator.dart';

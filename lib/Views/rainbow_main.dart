@@ -2,11 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:provider/provider.dart';
 import 'package:rainbow/Dialogs/error_dialogs.dart';
 import 'package:rainbow/Views/calls_page.dart';
 import 'package:rainbow/Views/camera_page.dart';
-import 'package:rainbow/Views/chat_page.dart';
+import 'package:rainbow/Views/conversation_page.dart';
 import 'package:rainbow/Views/contact_page.dart';
 import 'package:rainbow/Views/login_page.dart';
 import 'package:rainbow/Views/status_page.dart';
@@ -113,7 +112,7 @@ class _RainbowMainState extends State<RainbowMain>
                       color: Colors.white,
                       child: TabBarView(controller: _tabController, children: [
                         CameraPage(),
-                        ChatPage(user: widget.user),
+                        ConversationPage(user: widget.user),
                         StatusPage(),
                         CallsPage(),
                       ]),
