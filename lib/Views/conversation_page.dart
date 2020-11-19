@@ -6,8 +6,8 @@ import 'package:rainbow/Dialogs/error_dialogs.dart';
 import 'package:rainbow/Views/message_page.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/services/navigator_service.dart';
-import 'package:rainbow/models/conversation.dart';
-import 'package:rainbow/viewmodels/convertation_model.dart';
+import 'package:rainbow/core/models/conversation.dart';
+import 'package:rainbow/core/viewmodels/convertation_model.dart';
 
 class ConversationPage extends StatefulWidget {
   ConversationPage({this.user});

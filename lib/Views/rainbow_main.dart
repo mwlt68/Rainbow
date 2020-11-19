@@ -12,7 +12,7 @@ import 'package:rainbow/Views/status_page.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/services/auth_service.dart';
 import 'package:rainbow/core/services/navigator_service.dart';
-import 'package:rainbow/viewmodels/contact_model.dart';
+import 'package:rainbow/core/viewmodels/contact_model.dart';
 
 class RainbowMain extends StatefulWidget {
   final User user;

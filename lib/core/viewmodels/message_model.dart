@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/services/message_service.dart';
-import 'package:rainbow/models/conversation.dart';
+import 'package:rainbow/core/models/conversation.dart';
 
 class MessageModel with ChangeNotifier{
   final MessageService _messageService=getIt<MessageService>();

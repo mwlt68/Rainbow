@@ -9,8 +9,8 @@ import 'package:rainbow/Views/rainbow_main.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/services/navigator_service.dart';
-import 'package:rainbow/models/user.dart';
-import 'package:rainbow/viewmodels/user_model.dart';
+import 'package:rainbow/core/models/user.dart';
+import 'package:rainbow/core/viewmodels/user_model.dart';
 import 'package:rainbow/widgets/widgets.dart';
 
 class UserRegisterPage extends StatefulWidget {

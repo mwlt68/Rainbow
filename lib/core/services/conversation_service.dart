@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:rainbow/models/conversation.dart';
+import 'package:rainbow/core/models/conversation.dart';
 
 class ConversationService {
   final FirebaseFirestore _fBaseFireStore = FirebaseFirestore.instance;

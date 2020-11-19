@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:rainbow/models/user.dart';
+import 'package:rainbow/core/models/user.dart';
 
 class UserService{
   

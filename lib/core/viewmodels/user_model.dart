@@ -6,8 +6,8 @@ import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/services/storage_service.dart';
 import 'package:rainbow/core/services/user_service.dart';
-import 'package:rainbow/models/user.dart';
-import 'package:rainbow/viewmodels/base_model.dart';
+import 'package:rainbow/core/models/user.dart';
+import 'package:rainbow/core/viewmodels/base_model.dart';
 
 class UserModel extends BaseModel {
   final UserService _userService = getIt<UserService>();

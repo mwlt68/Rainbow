@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:rainbow/core/services/user_service.dart';
-import 'package:rainbow/models/user.dart';
-import 'package:rainbow/viewmodels/base_model.dart';
+import 'package:rainbow/core/models/user.dart';
+import 'package:rainbow/core/viewmodels/base_model.dart';
 
 class ContactModel extends BaseModel {
   UserService _userService = new UserService();

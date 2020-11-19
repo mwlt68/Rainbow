@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:rainbow/Dialogs/error_dialogs.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/services/message_service.dart';
-import 'package:rainbow/models/conversation.dart';
-import 'package:rainbow/viewmodels/message_model.dart';
+import 'package:rainbow/core/models/conversation.dart';
+import 'package:rainbow/core/viewmodels/message_model.dart';
 
 class MessagePage extends StatefulWidget {
   final String userId;

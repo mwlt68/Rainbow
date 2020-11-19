@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:rainbow/Dialogs/error_dialogs.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
-import 'package:rainbow/models/user.dart';
-import 'package:rainbow/viewmodels/contact_model.dart';
+import 'package:rainbow/core/models/user.dart';
+import 'package:rainbow/core/viewmodels/contact_model.dart';
 import 'package:rainbow/widgets/widgets.dart';
 
 class ContactPage extends StatelessWidget {
