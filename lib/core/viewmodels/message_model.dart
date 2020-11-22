@@ -10,6 +10,9 @@ class MessageModel with ChangeNotifier{
     return _messageService.getMessages(_conversationId);
   }
   
+  Stream<Message> getLastMessage (String _conversationId){
+    return _messageService.getLastMessageTest(_conversationId);
+  }
   Future<void> sendMessage(String senderId,String message,String _conversationId) async {
     await _messageService.sendMessage(new Message(senderId: senderId,message: message), _conversationId);
   }

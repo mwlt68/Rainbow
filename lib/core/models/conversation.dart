@@ -5,8 +5,9 @@ class Conversation{
   String name;
   String profileImage;
   String displayMessage;
+  List<String> members;
   bool isGroup;
-  Conversation({this.id,this.name,this.profileImage,this.displayMessage,this.isGroup});
+  Conversation({this.id,this.name,this.profileImage,this.displayMessage,this.isGroup,this.members});
   factory Conversation.fromSnapshot(DocumentSnapshot snapshot){
     return Conversation(
       id:snapshot.id,
@@ -14,6 +15,7 @@ class Conversation{
       displayMessage:snapshot.data()['displayMessage'],
       profileImage:"https://picsum.photos/200",
       isGroup:snapshot.data()['isGroup'],
+      members: List.from(snapshot.data()['members']),
       );
   }
 }

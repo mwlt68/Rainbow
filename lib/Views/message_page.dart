@@ -10,9 +10,9 @@ import 'package:rainbow/core/viewmodels/message_model.dart';
 
 class MessagePage extends StatefulWidget {
   final String userId;
-  final String conversationId;
+  final Conversation conversation;
 
-  const MessagePage({Key key, this.userId, this.conversationId})
+  const MessagePage({Key key, this.userId, this.conversation})
       : super(key: key);
   @override
   _MessagePageState createState() => _MessagePageState();
@@ -35,7 +35,7 @@ class _MessagePageState extends State<MessagePage> {
     return ChangeNotifierProvider(
       create: (context) => _model,
       child: StreamBuilder<List<Message>>(
-        stream: _model.messages(widget.conversationId),
+        stream: _model.messages(widget.conversation.id),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             ShowErrorDialog(context,
@@ -57,12 +57,12 @@ class _MessagePageState extends State<MessagePage> {
           children: [
             CircleAvatar(
               backgroundImage:
-                  NetworkImage("https://picsum.photos/200", scale: 0.1),
+                  NetworkImage(widget.conversation.profileImage, scale: 0.1),
             ),
             Padding(
               padding: const EdgeInsets.only(left: 10),
               child: Text(
-                "Mevlüt Gür",
+                widget.conversation.name,
                 overflow: TextOverflow.clip,
               ),
             ),
@@ -101,6 +101,7 @@ class _MessagePageState extends State<MessagePage> {
     return Container(
       decoration: BoxDecoration(
         image: DecorationImage(
+          //Background Image
             image: NetworkImage(
                 "https://i.pinimg.com/originals/2b/82/95/2b829561dee9e42f1e39983ab023821a.png"),
             fit: BoxFit.fill),
@@ -190,7 +191,7 @@ class _MessagePageState extends State<MessagePage> {
             icon: Icon(Icons.send, color: Colors.white),
             onPressed: () async {
               await _model.sendMessage(
-                  widget.userId, _textController.text,widget.conversationId);
+                  widget.userId, _textController.text,widget.conversation.id);
               _textController.text = "";
             },
           ))

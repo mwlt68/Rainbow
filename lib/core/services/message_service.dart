@@ -16,7 +16,14 @@ class MessageService {
     return ref.snapshots().map(
         (event) => event.docs.map((e) => Message.fromSnapshot(e)).toList());
   }
-
+  Stream<Message> getLastMessageTest(String conversationId ){
+      var ref = _collectionRef
+        .doc(conversationId)
+        .collection('messages')
+        .orderBy('timeStamp');
+      return ref.snapshots().map(
+        (event) => Message.fromSnapshot(event.docs.last));
+  }
   Future<void> sendMessage(Message message, String conversationId) async {
     var ref = _collectionRef.doc(conversationId).collection('messages');
     await ref.add({

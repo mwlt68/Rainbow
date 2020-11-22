@@ -17,7 +17,7 @@ class ConversationPage extends StatefulWidget {
 }
 
 class _ConversationPageState extends State<ConversationPage> {
-  final   NavigatorService _navigatorService= getIt<NavigatorService>();
+  final NavigatorService _navigatorService = getIt<NavigatorService>();
 
   @override
   Widget build(BuildContext context) {
@@ -25,11 +25,26 @@ class _ConversationPageState extends State<ConversationPage> {
       child: Center(child: getMessages()),
     );
   }
+  
   Widget getMessages() {
     var model = GetIt.instance<ConversationModel>();
     return ChangeNotifierProvider(
       create: (BuildContext context) => model,
       child: StreamBuilder<List<Conversation>>(
+          stream: model.conversationsTest(widget.user.uid),
+          builder: (context, AsyncSnapshot<List<Conversation>> snapshot) {
+            if (snapshot.hasError) {
+              ShowErrorDialog(context,
+                  title: "Data could not load !", message: snapshot.error);
+            } else if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            }
+            return _getListView(snapshot.data);
+          }),
+    );
+  }
+  Widget _getUserConversations(ConversationModel model){
+    return StreamBuilder<List<Conversation>>(
           stream: model.conversations(widget.user.uid),
           builder: (context, AsyncSnapshot<List<Conversation>> snapshot) {
             if (snapshot.hasError) {
@@ -38,44 +53,52 @@ class _ConversationPageState extends State<ConversationPage> {
             } else if (snapshot.connectionState == ConnectionState.waiting) {
               return CircularProgressIndicator();
             }
-            return ListView(
-              children: snapshot.data
-                  .map((conversation) => ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: NetworkImage(
-                              conversation.profileImage,
-                              scale: 0.1),
-                        ),
-                        title: Text(conversation.name),
-                        subtitle: Text(conversation.displayMessage),
-                        trailing: Column(
-                          children: [
-                            Text("19:34"),
-                            Container(
-                              margin: EdgeInsets.only(top: 10),
-                              alignment: Alignment.center,
-                              child: Text(
-                                "12",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              width: 25,
-                              height: 25,
-                              decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Theme.of(context).accentColor),
-                            ),
-                          ],
-                        ),
-                        onTap: () {
-                          _navigatorService.navigateTo( MessagePage(
-                                        userId: widget.user.uid,
-                                        conversationId: conversation.id,));
-                        },
-                      ))
-                  .toList(),
-            );
-          }),
+            return _getListView(snapshot.data);
+          });
+  }
+  ListView _getListView(List<Conversation> conversations) {
+    List<ListTile> tiles = new List<ListTile>();
+    for (var conversation in conversations) {
+      ListTile tile = _getListTile(conversation);
+      tiles.add(tile);
+    }
+    return ListView(
+      children: tiles,
+    );
+  }
+
+  ListTile _getListTile(Conversation conversation) {
+
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundImage: NetworkImage(conversation.profileImage, scale: 0.1),
+      ),
+      title: Text(conversation.name),
+      subtitle: Text(conversation.displayMessage),
+      trailing: Column(
+        children: [
+          Text("19:34"),
+          /* Container(
+            margin: EdgeInsets.only(top: 10),
+            alignment: Alignment.center,
+            child: Text(
+              "12",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white),
+            ),
+            width: 25,
+            height: 25,
+            decoration: BoxDecoration(
+                shape: BoxShape.circle, color: Theme.of(context).accentColor),
+          ), */
+        ],
+      ),
+      onTap: () {
+        _navigatorService.navigateTo(MessagePage(
+          userId: widget.user.uid,
+          conversation: conversation,
+        ));
+      },
     );
   }
 }
