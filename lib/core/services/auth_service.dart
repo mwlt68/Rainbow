@@ -5,7 +5,7 @@ class MyAuth {
 
 
   static Future<User>  getCurrentUser() async {
-    User user = await _firebaseAuth.currentUser;
+    User user =  _firebaseAuth.currentUser;
     return user;
   }
 

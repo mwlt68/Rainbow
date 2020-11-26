@@ -7,7 +7,9 @@ import 'package:rainbow/Views/message_page.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/services/navigator_service.dart';
 import 'package:rainbow/core/models/conversation.dart';
-import 'package:rainbow/core/viewmodels/convertation_model.dart';
+import 'package:rainbow/core/viewmodels/conversation_model.dart';
+import 'package:rainbow/core/viewmodels/message_model.dart';
+import 'package:rainbow/static_shared_functions.dart';
 
 class ConversationPage extends StatefulWidget {
   ConversationPage({this.user});
@@ -31,7 +33,7 @@ class _ConversationPageState extends State<ConversationPage> {
     return ChangeNotifierProvider(
       create: (BuildContext context) => model,
       child: StreamBuilder<List<Conversation>>(
-          stream: model.conversationsTest(widget.user.uid),
+          stream: model.conversations(widget.user.uid),
           builder: (context, AsyncSnapshot<List<Conversation>> snapshot) {
             if (snapshot.hasError) {
               ShowErrorDialog(context,
@@ -43,23 +45,11 @@ class _ConversationPageState extends State<ConversationPage> {
           }),
     );
   }
-  Widget _getUserConversations(ConversationModel model){
-    return StreamBuilder<List<Conversation>>(
-          stream: model.conversations(widget.user.uid),
-          builder: (context, AsyncSnapshot<List<Conversation>> snapshot) {
-            if (snapshot.hasError) {
-              ShowErrorDialog(context,
-                  title: "Data could not load !", message: snapshot.error);
-            } else if (snapshot.connectionState == ConnectionState.waiting) {
-              return CircularProgressIndicator();
-            }
-            return _getListView(snapshot.data);
-          });
-  }
   ListView _getListView(List<Conversation> conversations) {
-    List<ListTile> tiles = new List<ListTile>();
+    List<Widget> tiles = new List<Widget>();
     for (var conversation in conversations) {
-      ListTile tile = _getListTile(conversation);
+
+      Widget tile = _getListTile(conversation);
       tiles.add(tile);
     }
     return ListView(
@@ -67,32 +57,36 @@ class _ConversationPageState extends State<ConversationPage> {
     );
   }
 
-  ListTile _getListTile(Conversation conversation) {
 
+  Widget _getListTile(Conversation conversation) {
+    var model = GetIt.instance<MessageModel>();
+    return ChangeNotifierProvider(
+      create: (BuildContext context) => model,
+      child: StreamBuilder<Message>(
+          stream: model.getLastMessage(conversation.id),
+          builder: (context, AsyncSnapshot<Message> snapshot) {
+            if (snapshot.hasError) {
+              return Container(child: Text("Error"),);
+            } else if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            }
+            return  _creatListTile( conversation, snapshot.data);
+          }),
+    );
+    
+  }
+  ListTile _creatListTile(Conversation conversation,Message lastMessage){
     return ListTile(
       leading: CircleAvatar(
         backgroundImage: NetworkImage(conversation.profileImage, scale: 0.1),
       ),
       title: Text(conversation.name),
-      subtitle: Text(conversation.displayMessage),
-      trailing: Column(
+      subtitle:  lastMessage != null ?  Text(lastMessage.message,overflow: TextOverflow.ellipsis):SizedBox(),
+      trailing: lastMessage != null ? Column(
         children: [
-          Text("19:34"),
-          /* Container(
-            margin: EdgeInsets.only(top: 10),
-            alignment: Alignment.center,
-            child: Text(
-              "12",
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white),
-            ),
-            width: 25,
-            height: 25,
-            decoration: BoxDecoration(
-                shape: BoxShape.circle, color: Theme.of(context).accentColor),
-          ), */
+          Text(StaticFunctions.getTimeStampV1(lastMessage.timeStamp)),
         ],
-      ),
+      ):SizedBox(),
       onTap: () {
         _navigatorService.navigateTo(MessagePage(
           userId: widget.user.uid,
@@ -101,4 +95,5 @@ class _ConversationPageState extends State<ConversationPage> {
       },
     );
   }
+
 }

@@ -1,10 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow/Dialogs/error_dialogs.dart';
 import 'package:rainbow/core/locator.dart';
-import 'package:rainbow/core/services/message_service.dart';
 import 'package:rainbow/core/models/conversation.dart';
 import 'package:rainbow/core/viewmodels/message_model.dart';
 
@@ -193,6 +191,7 @@ class _MessagePageState extends State<MessagePage> {
               await _model.sendMessage(
                   widget.userId, _textController.text,widget.conversation.id);
               _textController.text = "";
+              _scroolAnimateToEnd();
             },
           ))
     ];

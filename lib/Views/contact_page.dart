@@ -4,7 +4,9 @@ import 'package:rainbow/Dialogs/error_dialogs.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/models/user.dart';
+import 'package:rainbow/core/services/auth_service.dart';
 import 'package:rainbow/core/viewmodels/contact_model.dart';
+import 'package:rainbow/core/viewmodels/conversation_model.dart';
 import 'package:rainbow/widgets/widgets.dart';
 
 class ContactPage extends StatelessWidget {
@@ -91,7 +93,12 @@ class ContactsList extends StatelessWidget {
       ),
       title: Text(myUser.name),
       subtitle: Text(myUser.status),
-        onTap: () {},
+        onTap: () async {
+          var model = getIt<ConversationModel>();
+          var currentUser=await MyAuth.getCurrentUser();
+          var res =await model.addConversationTest(currentUser.uid, myUser.userId);
+          print(res.id);
+        },
       );
     }
   }

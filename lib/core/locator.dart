@@ -5,7 +5,7 @@ import 'package:rainbow/core/services/navigator_service.dart';
 import 'package:rainbow/core/services/storage_service.dart';
 import 'package:rainbow/core/services/user_service.dart';
 import 'package:rainbow/core/viewmodels/contact_model.dart';
-import 'package:rainbow/core/viewmodels/convertation_model.dart';
+import 'package:rainbow/core/viewmodels/conversation_model.dart';
 import 'package:rainbow/core/viewmodels/message_model.dart';
 import 'package:rainbow/core/viewmodels/user_model.dart';
 

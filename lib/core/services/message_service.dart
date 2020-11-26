@@ -22,7 +22,14 @@ class MessageService {
         .collection('messages')
         .orderBy('timeStamp');
       return ref.snapshots().map(
-        (event) => Message.fromSnapshot(event.docs.last));
+        (event){
+          if(event.docs == null || event.docs.length==0){
+            return null;
+          }
+          else{
+            return Message.fromSnapshot(event.docs.last);
+          }
+        });
   }
   Future<void> sendMessage(Message message, String conversationId) async {
     var ref = _collectionRef.doc(conversationId).collection('messages');
