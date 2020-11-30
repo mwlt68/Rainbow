@@ -125,7 +125,7 @@ class _RainbowMainState extends State<RainbowMain>
         child: FloatingActionButton(
           child: Icon(Icons.message),
           onPressed: () {
-            _navigatorService.navigateTo(ContactPage());
+            _navigatorService.navigateTo(ContactPage(widget.user.uid));
           },
         ),
       ));

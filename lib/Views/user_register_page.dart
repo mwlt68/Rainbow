@@ -27,6 +27,7 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
   TextEditingController visiableNameTEC;
   TextEditingController statusTEC;
   File _image;
+  UserModel model;
   final picker = ImagePicker();
   @override
   void initState() {
@@ -38,7 +39,7 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    var model = getIt<UserModel>();
+    model = getIt<UserModel>();
     return ChangeNotifierProvider(
         create: (BuildContext context) => model,
         child: StreamBuilder<MyUser>(
@@ -75,6 +76,7 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
                 MyWidgets.getCustomTextView(statusTEC, DefaultData.Status,
                     DefaultData.UserDefaultStatus),
                 MyWidgets.getFlatButton(context, "Continue", _continueBtnClick),
+                Visibility(visible: model.busy,child: CircularProgressIndicator())
               ],
             ))
           ],
@@ -166,27 +168,29 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
 
   void _continueBtnClick() {
     var check = _checkTECValidation();
-    if (check) {
+    if (check && !model.busy) {
       registerUser();
     } else {}
   }
 
   void registerUser() {
-    UserModel userModel = new UserModel();
+    model.busy=true;
     FutureBuilder<DocumentReference>(
-      future: userModel.registerUser(
+      future: model.registerUser(
           widget.user, _image, visiableNameTEC.text, statusTEC.text),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
+          model.busy=false;
           _navigatorService.navigateTo(
               RainbowMain(
                 user: widget.user,
               ),
               isRemoveUntil: true);
         } else if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+            return CircularProgressIndicator();
         } else if (snapshot.hasError) {
-          ShowErrorDialog(context,
+            model.busy=false;
+            ShowErrorDialog(context,
               title: "Save Error", message: snapshot.error);
         }
       },

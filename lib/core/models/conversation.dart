@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rainbow/core/models/user.dart';
 
 class Conversation{
   String id;
@@ -6,11 +7,12 @@ class Conversation{
   String profileImage;
   List<String> members;
   bool isGroup;
+  List<MyUser> myUsers;
   Conversation({this.id,this.name,this.profileImage,this.isGroup,this.members});
   factory Conversation.fromSnapshot(DocumentSnapshot snapshot){
     return Conversation(
       id:snapshot.id,
-      name: 'Mevlut Test',
+      name: 'Group Test',
       profileImage:"https://picsum.photos/200",
       isGroup:snapshot.data()['isGroup'],
       members: List.from(snapshot.data()['members']),
@@ -23,6 +25,17 @@ class Conversation{
     'isGroup': isGroup,
     'members': members,
   };
+  MyUser getOtherUser(String currentUserId){
+    if(myUsers != null && !isGroup){
+      if(myUsers[0].userId != currentUserId){
+        return myUsers.elementAt(0);
+      }
+      else{
+        return myUsers.elementAt(1);
+      }
+    }
+    return null;
+  }
 }
 class Message{
   String id;
@@ -38,4 +51,10 @@ class Message{
       timeStamp: snapshot.data()['timeStamp'],
     );
   }
+  Map<String, dynamic> toJson() =>
+  {
+    'message': message,
+    'senderId': senderId,
+    'timeStamp': DateTime.now(),
+  };
 }

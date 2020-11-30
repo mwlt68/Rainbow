@@ -4,15 +4,19 @@ import 'package:rainbow/Dialogs/error_dialogs.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/models/user.dart';
-import 'package:rainbow/core/services/auth_service.dart';
+import 'package:rainbow/core/services/navigator_service.dart';
 import 'package:rainbow/core/viewmodels/contact_model.dart';
 import 'package:rainbow/core/viewmodels/conversation_model.dart';
 import 'package:rainbow/widgets/widgets.dart';
 
+import 'message_page.dart';
+
 class ContactPage extends StatelessWidget {
+  final String _currentUserId;
+  ContactPage(this._currentUserId);
   @override
   Widget build(BuildContext context) {
-    var contactListWidget=ContactsList(query: "",);
+    var contactListWidget=ContactsList(_currentUserId,query: "");
     return Scaffold(
       appBar: AppBar(
         title: Text("Contact"),
@@ -30,10 +34,15 @@ class ContactPage extends StatelessWidget {
   }
 }
 
-class ContactsList extends StatelessWidget {
+class 
+ContactsList extends StatelessWidget {
+  final NavigatorService _navigatorService = getIt<NavigatorService>();
+  String currentUserId;
   String query;
   List<MyUser> myUsers;
-  ContactsList({
+  ContactsList(
+    this.currentUserId,
+    {
     Key key,
     this.query,
   }) : super(key: key);
@@ -74,6 +83,8 @@ class ContactsList extends StatelessWidget {
   ListView getListView(){
     List<ListTile> tiles= new List<ListTile>();
     for (var myUser in myUsers) {
+      if(myUser.userId==currentUserId)
+        continue;
       var tile = _getListTile(myUser);
       if(tile != null){
         tiles.add(tile);
@@ -95,10 +106,9 @@ class ContactsList extends StatelessWidget {
       subtitle: Text(myUser.status),
         onTap: () async {
           var model = getIt<ConversationModel>();
-          var currentUser=await MyAuth.getCurrentUser();
-          var res =await model.addConversationTest(currentUser.uid, myUser.userId);
-          print(res.id);
-        },
+          var res =await model.startSingleConversation(currentUserId, myUser.userId);
+          _navigatorService.navigateTo(MessagePage(userId: currentUserId,conversation: res));
+        }, 
       );
     }
   }

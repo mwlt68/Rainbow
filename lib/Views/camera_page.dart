@@ -8,7 +8,7 @@ class _CameraPageState extends State<CameraPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      
+  
     );
   }
 }

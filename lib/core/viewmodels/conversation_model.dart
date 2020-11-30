@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/models/user.dart';
@@ -11,50 +10,49 @@ class ConversationModel with ChangeNotifier {
   final ConversationService _conversationService = getIt<ConversationService>();
   final UserService _userService = getIt<UserService>();
 
-  
-
   Stream<List<Conversation>> conversations(String userId) async* {
     final stream = _conversationService.getConversations(userId);
+    List<Conversation> resultConversations = [];
     await for (var conversationList in stream) {
       for (var conversation in conversationList) {
-        if (!conversation.isGroup) {
-          final user = await _getOtherUser(conversation, userId);
-          if (user != null) {
-            conversation.profileImage = user.imgSrc;
-            conversation.name = user.name;
-          }
+        var conversationComplete =
+            await _getConversationUsers(conversation, userId);
+        if (conversationComplete != null) {
+          resultConversations.add(conversationComplete);
         }
       }
-      yield conversationList;
+      yield resultConversations;
     }
-  }
-  Future<Conversation> addConversationTest(String currentUserId,String targetUserId) async {
-    return await _conversationService.startSingleConversationTest(currentUserId, targetUserId);
-  }
-  Future<Conversation> startSingleConversationTest(String currentUserId,String targetUserId) async {
-    var checkConversation= await _conversationService.getSingleConversationTest( currentUserId,targetUserId);
-    if(checkConversation == null){
-      return checkConversation;
-    }
-    final user = await _getOtherUser(checkConversation, currentUserId);
-    if (user != null) {
-      checkConversation.profileImage = user.imgSrc;
-      checkConversation.name = user.name;
-    }
-    return checkConversation;
   }
 
-  Future<MyUser> _getOtherUser(Conversation conversation, String userId) async {
-    Stream<MyUser> stream;
-    if (conversation.members.first == userId) {
-      stream =
-          _userService.getUserFromUserId(conversation.members.elementAt(1));
-    } else {
-      stream =
-          _userService.getUserFromUserId(conversation.members.elementAt(0));
+  Future<Conversation> _getConversationUsers(
+      Conversation conversation, String currentUserId) async {
+    List<String> userIdList = new List<String>();
+    for (var member in conversation.members) {
+      userIdList.add(member);
     }
-    await for (var user in stream) {
-      return user;
+    userIdList = userIdList.toSet().toList();
+    var myUsersStream = _userService.getUserFromUserIds(userIdList);
+    await for (var users in myUsersStream) {
+      conversation.myUsers = users;
+      var otherUser = conversation.getOtherUser(currentUserId);
+      if (otherUser != null) {
+        conversation.profileImage = otherUser.imgSrc;
+        conversation.name = otherUser.name;
+      }
+      return conversation;
     }
+  }
+
+  Future<Conversation> startSingleConversation(
+      String currentUserId, String targetUserId) async {
+    var checkConversation = await _conversationService
+        .getSingleConversation(currentUserId, targetUserId);
+    if (checkConversation == null) {
+      var conversation = await _conversationService.startSingleConversation(
+          currentUserId, targetUserId);
+      return _getConversationUsers(conversation, currentUserId);
+    } else
+      return _getConversationUsers(checkConversation, currentUserId);
   }
 }

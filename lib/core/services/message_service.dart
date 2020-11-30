@@ -33,10 +33,6 @@ class MessageService {
   }
   Future<void> sendMessage(Message message, String conversationId) async {
     var ref = _collectionRef.doc(conversationId).collection('messages');
-    await ref.add({
-      'senderId': message.senderId,
-      'message': message.message,
-      'timeStamp': DateTime.now(),
-    });
+    await ref.add(message.toJson());
   }
 }

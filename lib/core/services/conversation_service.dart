@@ -13,7 +13,7 @@ class ConversationService {
       event.docs.map((e) => Conversation.fromSnapshot(e)).toList());
   }
 
-  Future<Conversation> getSingleConversationTest(String currentUserId,String targetUserId) async {
+  Future<Conversation> getSingleConversation(String currentUserId,String targetUserId) async {
     List<String> members=new List<String>();
     members.add(currentUserId);
     members.add(targetUserId);
@@ -28,7 +28,7 @@ class ConversationService {
           return null;
     });
   }
-  Future<Conversation> startSingleConversationTest(String currentUserId,String targetUserId) async {
+  Future<Conversation> startSingleConversation(String currentUserId,String targetUserId) async {
     Conversation conversation = new Conversation(isGroup: false,members: [currentUserId,targetUserId]);
     return _collectionRef.add(conversation.toJson()).then((value) {
       conversation.id=value.id;

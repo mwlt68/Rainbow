@@ -12,5 +12,5 @@ class MyAuth {
   static Future<void> signOut() async {
     return _firebaseAuth.signOut();
   }
-
+ 
 }
