@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow/Dialogs/error_dialogs.dart';
 import 'package:rainbow/Views/message_page.dart';
+import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/services/navigator_service.dart';
 import 'package:rainbow/core/models/conversation.dart';
@@ -81,7 +82,7 @@ class _ConversationPageState extends State<ConversationPage> {
         backgroundImage: NetworkImage(conversation.profileImage, scale: 0.1),
       ),
       title: Text(conversation.name),
-      subtitle:  lastMessage != null ?  Text(lastMessage.message,overflow: TextOverflow.ellipsis):SizedBox(),
+      subtitle:  _getListTileSubtitle(lastMessage),
       trailing: lastMessage != null ? Column(
         children: [
           Text(StaticFunctions.getTimeStampV1(lastMessage.timeStamp)),
@@ -95,5 +96,18 @@ class _ConversationPageState extends State<ConversationPage> {
       },
     );
   }
+  Widget _getListTileSubtitle(Message lastMessage){
+    if(lastMessage == null){
+      SizedBox();
+    }
+    else{
+      if(lastMessage.isMedia){
+        return Text(DefaultData.AnImage,overflow: TextOverflow.ellipsis);
+      }
+      else{
+        return Text(lastMessage.message,overflow: TextOverflow.ellipsis);
+      }
+    }
 
+  }
 }

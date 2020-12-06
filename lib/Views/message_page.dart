@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow/Dialogs/error_dialogs.dart';
 import 'package:rainbow/core/locator.dart';
@@ -17,6 +20,7 @@ class MessagePage extends StatefulWidget {
 }
 
 class _MessagePageState extends State<MessagePage> {
+  final picker = ImagePicker();
   ScrollController _scrollController = new ScrollController();
   TextEditingController _textController;
   MessageModel _model;
@@ -28,6 +32,7 @@ class _MessagePageState extends State<MessagePage> {
     // TODO: implement initState
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -66,7 +71,6 @@ class _MessagePageState extends State<MessagePage> {
             ),
           ],
         ),
-        
         actions: [
           IconButton(
               icon: Icon(
@@ -99,7 +103,7 @@ class _MessagePageState extends State<MessagePage> {
     return Container(
       decoration: BoxDecoration(
         image: DecorationImage(
-          //Background Image
+            //Background Image
             image: NetworkImage(
                 "https://i.pinimg.com/originals/2b/82/95/2b829561dee9e42f1e39983ab023821a.png"),
             fit: BoxFit.fill),
@@ -108,16 +112,19 @@ class _MessagePageState extends State<MessagePage> {
         Expanded(
           child: _getListView(messages),
         ),
-        Row(children: _getBodyContainerRow()),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: _getBodyContainerRow()
+           ),
       ]),
     );
   }
 
   ListView _getListView(List<Message> messages) {
-    List<ListTile> tiles = new List<ListTile>();
+    List<GestureDetector> tiles = new List<GestureDetector>();
     for (var message in messages) {
-      ListTile tile = _getListTile(message);
-      if (tile != null) tiles.add(tile);
+      GestureDetector gestureDetector = _getGestureDetector(message);
+      if (gestureDetector != null) tiles.add(gestureDetector);
     }
     return ListView(
       controller: _scrollController,
@@ -126,25 +133,35 @@ class _MessagePageState extends State<MessagePage> {
     );
   }
 
-  ListTile _getListTile(Message message) {
-    return ListTile(
-        title: Align(
-      alignment: message.senderId == widget.userId
-          ? Alignment.centerRight
-          : Alignment.centerLeft,
-      child: Container(
-          padding: EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: message.senderId == widget.userId
-                ? Theme.of(context).accentColor
-                : Colors.white,
-            borderRadius: BorderRadius.circular(25),
-          ),
-          child: Text(
-            message.message,
-            style: TextStyle(color: Colors.black),
-          )),
-    ));
+  GestureDetector _getGestureDetector(Message message) {
+    return GestureDetector(
+      child: ListTile(
+          title: Align(
+        alignment: message.senderId == widget.userId
+            ? Alignment.centerRight
+            : Alignment.centerLeft,
+        child: Container(
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: message.senderId == widget.userId
+                  ? Theme.of(context).accentColor
+                  : Colors.white,
+              borderRadius: BorderRadius.circular(25),
+            ),
+            child: _getMessageContentWidget(message)),
+      )),
+    );
+  }
+
+  Widget _getMessageContentWidget(Message message) {
+    if (message.isMedia) {
+      return Image.network(message.message, width: 250, height: 250);
+    } else {
+      return Text(
+        message.message,
+        style: TextStyle(color: Colors.black),
+      );
+    }
   }
 
   List<Widget> _getBodyContainerRow() {
@@ -174,9 +191,14 @@ class _MessagePageState extends State<MessagePage> {
               child: Icon(Icons.attach_file),
             ),
             Padding(
-              padding: EdgeInsets.all(10),
+              padding: EdgeInsets.only(left:10,right: 10),
               child: InkWell(
-                child: Icon(Icons.camera_alt),
+                child: IconButton(
+                  onPressed: () {
+                    _showPicker(context);
+                  },
+                  icon: Icon(Icons.camera_alt),
+                ),
               ),
             )
           ],
@@ -189,12 +211,53 @@ class _MessagePageState extends State<MessagePage> {
             icon: Icon(Icons.send, color: Colors.white),
             onPressed: () async {
               await _model.sendMessage(
-                  widget.userId, _textController.text,widget.conversation.id);
+                  false, widget.userId, widget.conversation.id,
+                  message: _textController.text);
               _textController.text = "";
               _scroolAnimateToEnd();
             },
           ))
     ];
+  }
+
+  void _showPicker(context) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc) {
+          return SafeArea(
+            child: Container(
+              child: new Wrap(
+                children: <Widget>[
+                  new ListTile(
+                      leading: new Icon(Icons.photo_library),
+                      title: new Text('Photo Library'),
+                      onTap: () {
+                        _getImage(ImageSource.gallery);
+                        Navigator.of(context).pop();
+                      }),
+                  new ListTile(
+                    leading: new Icon(Icons.photo_camera),
+                    title: new Text('Camera'),
+                    onTap: () {
+                      _getImage(ImageSource.camera);
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  _getImage(ImageSource imgSource) async {
+    final pickedFile = await picker.getImage(source: imgSource);
+    if (pickedFile != null) {
+      var _image = File(pickedFile.path);
+      await _model.sendMessage(true, widget.userId, widget.conversation.id,
+          file: _image);
+    } else {
+    }
   }
 
   void _scroolAnimateToEnd() {

@@ -9,6 +9,7 @@ import 'package:rainbow/Views/conversation_page.dart';
 import 'package:rainbow/Views/contact_page.dart';
 import 'package:rainbow/Views/login_page.dart';
 import 'package:rainbow/Views/status_page.dart';
+import 'package:rainbow/Views/test_page.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/services/auth_service.dart';
 import 'package:rainbow/core/services/navigator_service.dart';
@@ -114,7 +115,7 @@ class _RainbowMainState extends State<RainbowMain>
                         CameraPage(),
                         ConversationPage(user: widget.user),
                         StatusPage(),
-                        CallsPage(),
+                        MyHomePage(),
                       ]),
                     ))
                   ],
@@ -123,7 +124,7 @@ class _RainbowMainState extends State<RainbowMain>
       floatingActionButton: Visibility(
         visible: isVisibleMessageFAB,
         child: FloatingActionButton(
-          child: Icon(Icons.message),
+          child: Icon(Icons.message,color: Colors.white,),
           onPressed: () {
             _navigatorService.navigateTo(ContactPage(widget.user.uid));
           },

@@ -42,19 +42,22 @@ class Message{
   String message;
   String senderId;
   Timestamp timeStamp;
-  Message({this.id,this.message,this.senderId,this.timeStamp});
+  bool isMedia;
+  Message({this.id,this.message,this.senderId,this.timeStamp,this.isMedia});
   factory Message.fromSnapshot(DocumentSnapshot snapshot){
     return Message(
       id:snapshot.id,
       message: snapshot.data()['message'],
       senderId: snapshot.data()['senderId'],
       timeStamp: snapshot.data()['timeStamp'],
+      isMedia: snapshot.data()['isMedia'],
     );
   }
   Map<String, dynamic> toJson() =>
   {
     'message': message,
     'senderId': senderId,
+    'isMedia': isMedia,
     'timeStamp': DateTime.now(),
   };
 }

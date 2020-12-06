@@ -22,6 +22,7 @@ class ContactModel extends BaseModel {
     }
     return _userService.getUserFromUserPhoneNumbers(phoneNumbers);
   }
+  
   Future<PermissionStatus> getPermission() async {
     final PermissionStatus permission = await Permission.contacts.status;
     if (permission != PermissionStatus.granted &&

@@ -19,5 +19,9 @@ class DefaultData {
   static const String ValPhoNumChar='Phone number must equal 10 characters !';
   // Firebase Collection Headers
   static const String ProfileImage="profileImage";
+  // Message Page
+  static const String MessageMedia="messageMedia";
+  // Conversation Page 
+  static const String AnImage="An Image";
 
 }
