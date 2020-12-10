@@ -18,6 +18,17 @@ class MessageModel with ChangeNotifier{
   Stream<Message> getLastMessage (String _conversationId){
     return _messageService.getLastMessageTest(_conversationId);
   }
+  
+  Future<void> deleteMessages(List<Message> messages,String conversationId) async {
+    if(messages == null || messages.length ==0){
+      return;
+    }else{
+      for (var message in messages) {
+        await _messageService.deleteMessage(message, conversationId);
+      }
+    }
+    
+  }
   Future<void> sendMessage(bool isMedia,String senderId,String _conversationId,{String message,File file}) async {
     if(isMedia){
       if(file != null){

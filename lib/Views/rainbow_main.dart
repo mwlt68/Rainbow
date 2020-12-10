@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:rainbow/Dialogs/error_dialogs.dart';
+import 'package:rainbow/Dialogs/my_dialogs.dart';
 import 'package:rainbow/Views/calls_page.dart';
 import 'package:rainbow/Views/camera_page.dart';
 import 'package:rainbow/Views/conversation_page.dart';

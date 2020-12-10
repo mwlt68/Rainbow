@@ -2,7 +2,7 @@ import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:rainbow/Dialogs/error_dialogs.dart';
+import 'package:rainbow/Dialogs/my_dialogs.dart';
 import 'package:rainbow/Views/rainbow_main.dart';
 import 'package:rainbow/Views/user_register_page.dart';
 import 'package:rainbow/core/default_data.dart';

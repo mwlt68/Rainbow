@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:rainbow/Dialogs/error_dialogs.dart';
+import 'package:rainbow/Dialogs/my_dialogs.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/models/conversation.dart';
@@ -25,6 +26,7 @@ class MessageSellection {
 }
 
 class _MessagePageState extends State<MessagePage> {
+  bool _isLoad = false;
   List<MessageSellection> cachedMessageSellections =
       new List<MessageSellection>();
   bool _selectionIsActive = false;
@@ -131,7 +133,7 @@ class _MessagePageState extends State<MessagePage> {
           child: _getListView(),
         ),
         Container(
-          color: _selectionIsActive ?   DefaultColors.DarkBlue: null,
+          color: _selectionIsActive ? DefaultColors.DarkBlue : null,
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: _selectionIsActive
@@ -185,16 +187,19 @@ class _MessagePageState extends State<MessagePage> {
   List<Widget> _selectModeButtons() {
     return [
       FlatButton(
-          onPressed: () {
-            setState(() {
-              cachedMessageSellections.forEach((e) => e.didSelect = false);
-              _selectionIsActive = false;
-            });
-          },
-          child: Text("Cancel",style: TextStyle(color:DefaultColors.DarkBlue),),
+          onPressed: _selectionModeCancel,
+          child: Text(
+            "Cancel",
+            style: TextStyle(color: DefaultColors.DarkBlue),
+          ),
           color: DefaultColors.BlueAndGrey),
       FlatButton(
-          onPressed: () {}, child: Text("Delete",style: TextStyle(color:DefaultColors.DarkBlue),), color: DefaultColors.Yellow)
+          onPressed: _deleteMessagePreCheckSure,
+          child: Text(
+            "Delete",
+            style: TextStyle(color: DefaultColors.DarkBlue),
+          ),
+          color: DefaultColors.Yellow)
     ];
   }
 
@@ -207,6 +212,7 @@ class _MessagePageState extends State<MessagePage> {
         gestures.add(gesture);
       }
     }
+    _setListViewScrollment();
     return ListView(
       controller: _scrollController,
       shrinkWrap: true,
@@ -217,7 +223,7 @@ class _MessagePageState extends State<MessagePage> {
   // GestureDetector contain  a ListTile for show a message content.
   GestureDetector _getGestureDetector(MessageSellection messageSellection) {
     var listTile = ListTile(
-        selectedTileColor:DefaultColors.YellowLowOpacity, 
+        selectedTileColor: DefaultColors.YellowLowOpacity,
         selected: messageSellection.didSelect,
         title: Align(
           alignment: messageSellection.message.senderId == widget.userId
@@ -353,7 +359,57 @@ class _MessagePageState extends State<MessagePage> {
       var _image = File(pickedFile.path);
       await _model.sendMessage(true, widget.userId, widget.conversation.id,
           file: _image);
+      _scroolAnimateToEnd();
     } else {}
+  }
+
+  void _selectionModeCancel() {
+    setState(() {
+      cachedMessageSellections.forEach((e) => e.didSelect = false);
+      _selectionIsActive = false;
+    });
+  }
+
+  void _deleteMessagePreCheckSure() {
+    AlertDialog alert = AlertDialog(
+      title: Text("Deletion Transaction"),
+      content: Text("Are you sure for delete this messages ?"),
+      actions: [
+        FlatButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text("No")),
+        FlatButton(
+            onPressed: () {
+              _deleteMessages();
+              Navigator.pop(context);
+            },
+            child: Text(
+              "Yes",
+              style: TextStyle(color: Colors.redAccent),
+            )),
+      ],
+    );
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  Future<void> _deleteMessages() async {
+    var selectedMessages = List<Message>();
+    cachedMessageSellections.forEach((element) {
+      if (element.didSelect) {
+        selectedMessages.add(element.message);
+      }
+    });
+    await _model.deleteMessages(selectedMessages, widget.conversation.id);
+    setState(() {
+      _selectionIsActive = false;
+    });
   }
 
   void _scroolAnimateToEnd() {
@@ -363,5 +419,16 @@ class _MessagePageState extends State<MessagePage> {
       duration: new Duration(milliseconds: 200),
       curve: Curves.easeIn,
     );
+  }
+
+  void _setListViewScrollment() {
+    if (!_isLoad) {
+      Timer(
+        Duration(milliseconds: 100),
+        () => _scrollController
+            .jumpTo(_scrollController.position.maxScrollExtent),
+      );
+      _isLoad = true;
+    }
   }
 }

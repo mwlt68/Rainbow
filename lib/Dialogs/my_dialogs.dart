@@ -20,8 +20,8 @@ ShowErrorDialog(@required BuildContext context,
           message,
           overflow: TextOverflow.visible,
           textAlign: TextAlign.start,
-          style:
-              TextStyle(fontSize: 18, fontFamily: 'Roboto', color: Colors.black),
+          style: TextStyle(
+              fontSize: 18, fontFamily: 'Roboto', color: Colors.black),
         ),
         actions: <Widget>[
           // usually buttons at the bottom of the dialog
@@ -36,6 +36,7 @@ ShowErrorDialog(@required BuildContext context,
     },
   );
 }
+// This method will return bool value.If user select yes return true else return false.
 
 Widget BasicErrorWidget({String title, String message}) => Center(
       child: Column(

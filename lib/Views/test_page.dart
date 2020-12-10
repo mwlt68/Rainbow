@@ -16,14 +16,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  File _image;
-  final picker = ImagePicker();
-
-
-  Future getImage(BuildContext context) async {
-     //   Navigator.pop(this.context);
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,14 +24,12 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text('Image Picker Example'),
       ),
       body: Center(
-        child: _image == null
-            ? Text('No image selected.')
-            : Image.file(_image),
+        child: Text("data"),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () async{
-          getImage(context);},
+        onPressed: () {
+          },
         tooltip: 'Pick Image',
         child: Icon(Icons.add_a_photo),
       ),
