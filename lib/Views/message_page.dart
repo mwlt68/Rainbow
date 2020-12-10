@@ -1,10 +1,9 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow/Dialogs/error_dialogs.dart';
+import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/models/conversation.dart';
 import 'package:rainbow/core/viewmodels/message_model.dart';
@@ -19,17 +18,25 @@ class MessagePage extends StatefulWidget {
   _MessagePageState createState() => _MessagePageState();
 }
 
+class MessageSellection {
+  MessageSellection(this.message, {this.didSelect = false});
+  Message message;
+  bool didSelect;
+}
+
 class _MessagePageState extends State<MessagePage> {
+  List<MessageSellection> cachedMessageSellections =
+      new List<MessageSellection>();
+  bool _selectionIsActive = false;
   final picker = ImagePicker();
   ScrollController _scrollController = new ScrollController();
   TextEditingController _textController;
   MessageModel _model;
-  GetIt _getIt;
+
   @override
   void initState() {
     _textController = new TextEditingController();
     _model = getIt<MessageModel>();
-    // TODO: implement initState
     super.initState();
   }
 
@@ -44,15 +51,21 @@ class _MessagePageState extends State<MessagePage> {
             ShowErrorDialog(context,
                 title: "Data could not load !", message: snapshot.error);
           } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
+            if (cachedMessageSellections != null) {
+              return _getScaffold();
+            } else {
+              return CircularProgressIndicator();
+            }
           }
-          return _getScaffold(snapshot.data);
+
+          cachedMessageSellections = _getCachedMessages(snapshot.data);
+          return _getScaffold();
         },
       ),
     );
   }
 
-  Scaffold _getScaffold(List<Message> messages) {
+  Scaffold _getScaffold() {
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 0,
@@ -71,35 +84,40 @@ class _MessagePageState extends State<MessagePage> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-              icon: Icon(
-                Icons.phone,
-                color: Colors.white,
-              ),
-              iconSize: 30,
-              onPressed: () {}),
-          IconButton(
-              icon: Icon(
-                Icons.video_call,
-                color: Colors.white,
-              ),
-              iconSize: 30,
-              onPressed: null),
-          IconButton(
-              icon: Icon(
-                Icons.more_vert,
-                color: Colors.white,
-              ),
-              iconSize: 30,
-              onPressed: null),
-        ],
+        actions: _getScaffoldActions(),
       ),
-      body: _getBodyContainer(messages),
+      body: _getBodyContainer(),
     );
   }
 
-  Container _getBodyContainer(List<Message> messages) {
+  /*
+    This method compare to new messages condition and cached messages condition .
+   */
+  List<MessageSellection> _getCachedMessages(List<Message> newMessages) {
+    List<MessageSellection> messageSellections = new List<MessageSellection>();
+    for (var message in newMessages) {
+      var didMatch = false;
+      for (var cMessageS in cachedMessageSellections) {
+        if (cMessageS.message.id == message.id) {
+          MessageSellection messageSellection = new MessageSellection(
+              cMessageS.message,
+              didSelect: cMessageS.didSelect);
+          messageSellections.add(messageSellection);
+          didMatch = true;
+          break;
+        }
+      }
+      if (!didMatch) {
+        MessageSellection messageSellection = new MessageSellection(message);
+        if (messageSellection != null) {
+          messageSellections.add(messageSellection);
+        }
+      }
+    }
+    return messageSellections;
+  }
+
+  Container _getBodyContainer() {
     return Container(
       decoration: BoxDecoration(
         image: DecorationImage(
@@ -110,49 +128,125 @@ class _MessagePageState extends State<MessagePage> {
       ),
       child: Column(children: [
         Expanded(
-          child: _getListView(messages),
+          child: _getListView(),
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: _getBodyContainerRow()
-           ),
+        Container(
+          color: _selectionIsActive ?   DefaultColors.DarkBlue: null,
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: _selectionIsActive
+                  ? _selectModeButtons()
+                  : _getBodyContainerRow()),
+        ),
       ]),
     );
   }
 
-  ListView _getListView(List<Message> messages) {
-    List<GestureDetector> tiles = new List<GestureDetector>();
-    for (var message in messages) {
-      GestureDetector gestureDetector = _getGestureDetector(message);
-      if (gestureDetector != null) tiles.add(gestureDetector);
+  List<Widget> _getScaffoldActions() {
+    return [
+      IconButton(
+        disabledColor: Colors.black,
+        icon: Icon(
+          Icons.phone,
+          color: _selectionIsActive ? null : Colors.white,
+        ),
+        iconSize: 30,
+        onPressed: null,
+      ),
+      IconButton(
+          disabledColor: Colors.black,
+          icon: Icon(
+            Icons.video_call,
+            color: _selectionIsActive ? null : Colors.white,
+          ),
+          iconSize: 30,
+          onPressed: null),
+      IconButton(
+          disabledColor: Colors.black,
+          icon: Icon(
+            Icons.select_all_sharp,
+            color: _selectionIsActive ? null : Colors.white,
+          ),
+          iconSize: 30,
+          onPressed: _selectionIsActive
+              ? null
+              : () {
+                  setState(() {
+                    _selectionIsActive = true;
+                  });
+                }),
+    ];
+  }
+
+  /* When select mode active this buttons are visible.
+    Cancel button: This button will be unsellect to sellected button.And turn old (_getBodyContainerRow) userinterface.
+    Delete button: This button will delete messages in firebase messages collection.And turn old userinterface.
+  */
+  List<Widget> _selectModeButtons() {
+    return [
+      FlatButton(
+          onPressed: () {
+            setState(() {
+              cachedMessageSellections.forEach((e) => e.didSelect = false);
+              _selectionIsActive = false;
+            });
+          },
+          child: Text("Cancel",style: TextStyle(color:DefaultColors.DarkBlue),),
+          color: DefaultColors.BlueAndGrey),
+      FlatButton(
+          onPressed: () {}, child: Text("Delete",style: TextStyle(color:DefaultColors.DarkBlue),), color: DefaultColors.Yellow)
+    ];
+  }
+
+  // ListView contain a lot of gestures.
+  ListView _getListView() {
+    List<GestureDetector> gestures = new List<GestureDetector>();
+    for (var messageSellection in cachedMessageSellections) {
+      var gesture = _getGestureDetector(messageSellection);
+      if (gesture != null) {
+        gestures.add(gesture);
+      }
     }
     return ListView(
       controller: _scrollController,
       shrinkWrap: true,
-      children: tiles,
+      children: gestures,
     );
   }
 
-  GestureDetector _getGestureDetector(Message message) {
+  // GestureDetector contain  a ListTile for show a message content.
+  GestureDetector _getGestureDetector(MessageSellection messageSellection) {
+    var listTile = ListTile(
+        selectedTileColor:DefaultColors.YellowLowOpacity, 
+        selected: messageSellection.didSelect,
+        title: Align(
+          alignment: messageSellection.message.senderId == widget.userId
+              ? Alignment.centerRight
+              : Alignment.centerLeft,
+          child: Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: messageSellection.message.senderId == widget.userId
+                    ? Theme.of(context).accentColor
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: _getMessageContentWidget(messageSellection.message)),
+        ));
+
     return GestureDetector(
-      child: ListTile(
-          title: Align(
-        alignment: message.senderId == widget.userId
-            ? Alignment.centerRight
-            : Alignment.centerLeft,
-        child: Container(
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: message.senderId == widget.userId
-                  ? Theme.of(context).accentColor
-                  : Colors.white,
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: _getMessageContentWidget(message)),
-      )),
+      child: listTile,
+      onTap: () {
+        if (_selectionIsActive) {
+          setState(() {
+            messageSellection.didSelect = !messageSellection.didSelect;
+          });
+        }
+      },
     );
   }
 
+  // This method check received message is text or image.
   Widget _getMessageContentWidget(Message message) {
     if (message.isMedia) {
       return Image.network(message.message, width: 250, height: 250);
@@ -191,7 +285,7 @@ class _MessagePageState extends State<MessagePage> {
               child: Icon(Icons.attach_file),
             ),
             Padding(
-              padding: EdgeInsets.only(left:10,right: 10),
+              padding: EdgeInsets.only(left: 10, right: 10),
               child: InkWell(
                 child: IconButton(
                   onPressed: () {
@@ -220,6 +314,7 @@ class _MessagePageState extends State<MessagePage> {
     ];
   }
 
+  // This method will work when pressed camera button.
   void _showPicker(context) {
     showModalBottomSheet(
         context: context,
@@ -250,14 +345,15 @@ class _MessagePageState extends State<MessagePage> {
         });
   }
 
+  /* This method will work when user get any image from gallery or camera.
+  Later,This image upload to firebase and url of image save in message under the messages collection. */
   _getImage(ImageSource imgSource) async {
     final pickedFile = await picker.getImage(source: imgSource);
     if (pickedFile != null) {
       var _image = File(pickedFile.path);
       await _model.sendMessage(true, widget.userId, widget.conversation.id,
           file: _image);
-    } else {
-    }
+    } else {}
   }
 
   void _scroolAnimateToEnd() {

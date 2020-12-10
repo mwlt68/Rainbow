@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 class DefaultData {
   static const String AppName="Rainbow";
   static const String VerifyTitle="Verify your phone number";
@@ -24,4 +26,10 @@ class DefaultData {
   // Conversation Page 
   static const String AnImage="An Image";
 
+}
+class DefaultColors{
+  static const Color DarkBlue=Color.fromRGBO(52, 57, 86,1);
+  static const Color BlueAndGrey=Color.fromRGBO(127, 132, 160,1);
+  static const Color Yellow=Color.fromRGBO(247, 196, 37,1);
+  static const Color YellowLowOpacity=Color.fromRGBO(247, 196, 37,0.75);
 }
