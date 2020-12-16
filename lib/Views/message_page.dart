@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +9,8 @@ import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/models/conversation.dart';
 import 'package:rainbow/core/viewmodels/message_model.dart';
+import 'package:rainbow/static_shared_functions.dart';
+import 'package:rainbow/widgets/widgets.dart';
 
 class MessagePage extends StatefulWidget {
   final String userId;
@@ -26,6 +29,8 @@ class MessageSellection {
 }
 
 class _MessagePageState extends State<MessagePage> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  Color themeAccentColor, themePrimaryColor;
   bool _isLoad = false;
   List<MessageSellection> cachedMessageSellections =
       new List<MessageSellection>();
@@ -44,6 +49,8 @@ class _MessagePageState extends State<MessagePage> {
 
   @override
   Widget build(BuildContext context) {
+    themeAccentColor = Theme.of(context).accentColor;
+    themePrimaryColor = Theme.of(context).primaryColor;
     return ChangeNotifierProvider(
       create: (context) => _model,
       child: StreamBuilder<List<Message>>(
@@ -69,6 +76,7 @@ class _MessagePageState extends State<MessagePage> {
 
   Scaffold _getScaffold() {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         titleSpacing: 0,
         title: Row(
@@ -233,7 +241,7 @@ class _MessagePageState extends State<MessagePage> {
               padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: messageSellection.message.senderId == widget.userId
-                    ? Theme.of(context).accentColor
+                    ? themeAccentColor
                     : Colors.white,
                 borderRadius: BorderRadius.circular(25),
               ),
@@ -247,6 +255,11 @@ class _MessagePageState extends State<MessagePage> {
           setState(() {
             messageSellection.didSelect = !messageSellection.didSelect;
           });
+        }
+      },
+      onLongPressEnd: (detail) {
+        if (!_selectionIsActive) {
+          _getMessageDetailDialog(messageSellection.message);
         }
       },
     );
@@ -305,8 +318,8 @@ class _MessagePageState extends State<MessagePage> {
         ),
       )),
       Container(
-          decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor, shape: BoxShape.circle),
+          decoration:
+              BoxDecoration(color: themeAccentColor, shape: BoxShape.circle),
           child: IconButton(
             icon: Icon(Icons.send, color: Colors.white),
             onPressed: () async {
@@ -412,11 +425,80 @@ class _MessagePageState extends State<MessagePage> {
     });
   }
 
+  _getMessageDetailDialog(Message message) {
+    if (message == null) {
+      return;
+    }
+    showDialog(
+        context: this.context,
+        builder: (buildContext) {
+          return SimpleDialog(
+            title: Card(
+              child: Container(
+                padding: EdgeInsets.all(15),
+                child: _getMessageContentWidget(message),
+              ),
+              shadowColor: Colors.black,
+            ),
+            //Text("Message Detail"),
+            children: _getMessageDetailDialogChildrens(message),
+          );
+        });
+  }
+
+  List<Widget> _getMessageDetailDialogChildrens(Message message) {
+    List<Widget> childrens = [];
+    if (message.timeStamp != null) {
+      childrens.add(Container(
+        margin: EdgeInsets.only(top: 5, bottom: 5),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            MyWidgets.getRoundText(
+                StaticFunctions.getTimeStampV2(message.timeStamp), Colors.blue),
+            MyWidgets.getRoundText(
+                StaticFunctions.getTimeStampV3(message.timeStamp), Colors.blue),
+          ],
+        ),
+      ));
+    }
+    childrens.add(MyWidgets.getDefaultDivider);
+    if (message.isMedia) {
+      childrens.add(Container(
+        margin: EdgeInsets.symmetric(vertical: 5),
+        padding: EdgeInsets.symmetric(horizontal: 25),
+        child: MyWidgets.getNormalRaisedButton(
+            "Download to gallary", Colors.blue, _downloadToGalary),
+      ));
+      // childrens.add(MyWidgets.getRaisedButton("Download to gallary", Colors.blue, () {}) );
+    }
+    if (message.message != null) {
+      childrens.add(Container(
+        margin: EdgeInsets.symmetric(vertical: 5),
+        padding: EdgeInsets.symmetric(horizontal: 25),
+        child: MyWidgets.getNormalRaisedButton(
+            "Copy to clickboard", Colors.blue,(){_copyToClickBoard(message);}),
+      ));
+    }
+    return childrens;
+  }
+
+   void _downloadToGalary() {
+
+   }
+   void _copyToClickBoard(Message message) {
+    FlutterClipboard.copy(message.message).then((value) {
+      Navigator.pop(context);
+      _scaffoldKey.currentState.showSnackBar(
+          SnackBar(content: Text('Coppied : '+message.message)));
+    });
+  }
+
   void _scroolAnimateToEnd() {
     var scrollPosition = _scrollController.position;
     _scrollController.animateTo(
       scrollPosition.maxScrollExtent,
-      duration: new Duration(milliseconds: 200),
+      duration: new Duration(milliseconds: 100),
       curve: Curves.easeIn,
     );
   }
@@ -424,7 +506,7 @@ class _MessagePageState extends State<MessagePage> {
   void _setListViewScrollment() {
     if (!_isLoad) {
       Timer(
-        Duration(milliseconds: 100),
+        Duration(milliseconds: 300),
         () => _scrollController
             .jumpTo(_scrollController.position.maxScrollExtent),
       );

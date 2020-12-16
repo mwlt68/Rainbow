@@ -15,4 +15,12 @@ class StaticFunctions{
     return today.year == other.year && today.month == other.month
            && today.day == other.day;
   }
+  static String getTimeStampV2 (Timestamp timestamp){
+    DateFormat formatter =DateFormat.Hm();
+    return formatter.format(timestamp.toDate());
+  }  
+  static String getTimeStampV3 (Timestamp timestamp){
+    DateFormat formatter = DateFormat('dd-MM-yyyy');
+    return formatter.format(timestamp.toDate());
+  }
 }

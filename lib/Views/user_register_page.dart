@@ -75,7 +75,7 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
                     visiableNameTEC, DefaultData.VisiableName, "Nameless"),
                 MyWidgets.getCustomTextView(statusTEC, DefaultData.Status,
                     DefaultData.UserDefaultStatus),
-                MyWidgets.getFlatButton(context, "Continue", _continueBtnClick),
+                MyWidgets.getHugeRaisedButton( "Continue",Theme.of(context).accentColor, _continueBtnClick),
                 Visibility(visible: model.busy,child: CircularProgressIndicator())
               ],
             ))
