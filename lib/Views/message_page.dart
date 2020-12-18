@@ -2,15 +2,19 @@ import 'dart:async';
 import 'dart:io';
 import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
+import 'package:image_downloader/image_downloader.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow/Dialogs/my_dialogs.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/models/conversation.dart';
+import 'package:rainbow/core/services/download_service.dart';
 import 'package:rainbow/core/viewmodels/message_model.dart';
 import 'package:rainbow/static_shared_functions.dart';
 import 'package:rainbow/widgets/widgets.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class MessagePage extends StatefulWidget {
   final String userId;
@@ -26,6 +30,21 @@ class MessageSellection {
   MessageSellection(this.message, {this.didSelect = false});
   Message message;
   bool didSelect;
+  bool _isDownloading=false;
+  String downloadId;
+  int downloadProgress = 0;
+  bool get isDownload {
+    return _isDownloading;
+  }
+
+  void set isDownload(bool val) {
+    if (val == false) {
+      downloadProgress = 0;
+      downloadId = null;
+    }
+    _isDownloading = val;
+    
+  }
 }
 
 class _MessagePageState extends State<MessagePage> {
@@ -39,12 +58,34 @@ class _MessagePageState extends State<MessagePage> {
   ScrollController _scrollController = new ScrollController();
   TextEditingController _textController;
   MessageModel _model;
+  DownloadService _downloadService;
 
   @override
   void initState() {
+    super.initState();
     _textController = new TextEditingController();
     _model = getIt<MessageModel>();
-    super.initState();
+    _downloadService = DownloadService();
+    ImageDownloader.callback(onProgressUpdate: (String imageId, int progress) {
+      print("id: "+imageId.toString()+"   val: "+progress.toString());
+      for (var messageSellection in cachedMessageSellections) {
+        if (messageSellection.isDownload &&
+            messageSellection.downloadId == imageId) {
+          if (progress == 100) {
+            print("snapshot");
+            messageSellection._isDownloading=false;
+            _scaffoldKey.currentState
+                .showSnackBar(SnackBar(content: Text("Download completed.")));
+          } else {
+            setState(() {
+            print("progress");
+              messageSellection.downloadProgress = progress;
+            });
+            break;
+          }
+        }
+      }
+    });
   }
 
   @override
@@ -259,7 +300,7 @@ class _MessagePageState extends State<MessagePage> {
       },
       onLongPressEnd: (detail) {
         if (!_selectionIsActive) {
-          _getMessageDetailDialog(messageSellection.message);
+          _getMessageDetailDialog(messageSellection);
         }
       },
     );
@@ -425,8 +466,8 @@ class _MessagePageState extends State<MessagePage> {
     });
   }
 
-  _getMessageDetailDialog(Message message) {
-    if (message == null) {
+  _getMessageDetailDialog(MessageSellection messageSellection) {
+    if (messageSellection.message == null) {
       return;
     }
     showDialog(
@@ -436,61 +477,83 @@ class _MessagePageState extends State<MessagePage> {
             title: Card(
               child: Container(
                 padding: EdgeInsets.all(15),
-                child: _getMessageContentWidget(message),
+                child: _getMessageContentWidget(messageSellection.message),
               ),
               shadowColor: Colors.black,
             ),
             //Text("Message Detail"),
-            children: _getMessageDetailDialogChildrens(message),
+            children: _getMessageDetailDialogChildrens(messageSellection),
           );
         });
   }
 
-  List<Widget> _getMessageDetailDialogChildrens(Message message) {
+  List<Widget> _getMessageDetailDialogChildrens(
+      MessageSellection messageSellection) {
     List<Widget> childrens = [];
-    if (message.timeStamp != null) {
+    if (messageSellection.message.timeStamp != null) {
       childrens.add(Container(
         margin: EdgeInsets.only(top: 5, bottom: 5),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             MyWidgets.getRoundText(
-                StaticFunctions.getTimeStampV2(message.timeStamp), Colors.blue),
+                StaticFunctions.getTimeStampV2(
+                    messageSellection.message.timeStamp),
+                Colors.blue),
             MyWidgets.getRoundText(
-                StaticFunctions.getTimeStampV3(message.timeStamp), Colors.blue),
+                StaticFunctions.getTimeStampV3(
+                    messageSellection.message.timeStamp),
+                Colors.blue),
           ],
         ),
       ));
     }
     childrens.add(MyWidgets.getDefaultDivider);
-    if (message.isMedia) {
+    if (messageSellection.message.isMedia) {
       childrens.add(Container(
         margin: EdgeInsets.symmetric(vertical: 5),
         padding: EdgeInsets.symmetric(horizontal: 25),
         child: MyWidgets.getNormalRaisedButton(
-            "Download to gallary", Colors.blue, _downloadToGalary),
+            "Download to gallary", Colors.blue, () {
+          _downloadToGalary(messageSellection);
+        }),
       ));
       // childrens.add(MyWidgets.getRaisedButton("Download to gallary", Colors.blue, () {}) );
     }
-    if (message.message != null) {
+    if (messageSellection.message.message != null) {
       childrens.add(Container(
         margin: EdgeInsets.symmetric(vertical: 5),
         padding: EdgeInsets.symmetric(horizontal: 25),
         child: MyWidgets.getNormalRaisedButton(
-            "Copy to clickboard", Colors.blue,(){_copyToClickBoard(message);}),
+            "Copy to clickboard", Colors.blue, () {
+          _copyToClickBoard(messageSellection);
+        }),
       ));
     }
     return childrens;
   }
 
-   void _downloadToGalary() {
+  Future<void> _downloadToGalary(MessageSellection messageSellection) async {
+    try {
+      if (messageSellection.message.isMedia && !messageSellection.isDownload) {
+        _downloadService
+            .downloadImages(messageSellection.message.message)
+            .then((imageId) {
+          messageSellection.downloadId = imageId;
+        });
+        messageSellection.isDownload = true;
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      ShowErrorDialog(context, title: "Download Error", message: e.toString());
+    }
+  }
 
-   }
-   void _copyToClickBoard(Message message) {
-    FlutterClipboard.copy(message.message).then((value) {
+  void _copyToClickBoard(MessageSellection messageSellection) {
+    FlutterClipboard.copy(messageSellection.message.message).then((value) {
       Navigator.pop(context);
-      _scaffoldKey.currentState.showSnackBar(
-          SnackBar(content: Text('Coppied : '+message.message)));
+      _scaffoldKey.currentState.showSnackBar(SnackBar(
+          content: Text('Coppied : ' + messageSellection.message.message)));
     });
   }
 
