@@ -6,12 +6,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow/Dialogs/my_dialogs.dart';
 import 'package:rainbow/Views/rainbow_main.dart';
+import 'package:rainbow/common/widgets/widgets.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/services/navigator_service.dart';
 import 'package:rainbow/core/models/user.dart';
 import 'package:rainbow/core/viewmodels/user_model.dart';
-import 'package:rainbow/widgets/widgets.dart';
 
 class UserRegisterPage extends StatefulWidget {
   @override
@@ -71,11 +71,11 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
                 child: Column(
               children: [
                 getImagePicker,
-                MyWidgets.getCustomTextView(
+                mTextView(
                     visiableNameTEC, DefaultData.VisiableName, "Nameless"),
-                MyWidgets.getCustomTextView(statusTEC, DefaultData.Status,
+                mTextView(statusTEC, DefaultData.Status,
                     DefaultData.UserDefaultStatus),
-                MyWidgets.getHugeRaisedButton( "Continue",Theme.of(context).accentColor, _continueBtnClick),
+                mHugeRaisedButton( "Continue",Theme.of(context).accentColor, _continueBtnClick),
                 Visibility(visible: model.busy,child: CircularProgressIndicator())
               ],
             ))
@@ -83,8 +83,8 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
         ),
       );
   Widget get getImagePicker => GestureDetector(
-        onTap: () {
-          _showPicker(context);
+        onTap: () async{
+          showPicker(context,_getImage);
         },
         child: CircleAvatar(
           radius: 55,
@@ -112,39 +112,10 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
                 ),
         ),
       );
-  void _showPicker(context) {
-    showModalBottomSheet(
-        context: context,
-        builder: (BuildContext bc) {
-          return SafeArea(
-            child: Container(
-              child: new Wrap(
-                children: <Widget>[
-                  new ListTile(
-                      leading: new Icon(Icons.photo_library),
-                      title: new Text('Photo Library'),
-                      onTap: () {
-                        _imgFromGallery();
-                        Navigator.of(context).pop();
-                      }),
-                  new ListTile(
-                    leading: new Icon(Icons.photo_camera),
-                    title: new Text('Camera'),
-                    onTap: () {
-                      _imgFromCamera();
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              ),
-            ),
-          );
-        });
-  }
 
-  _imgFromCamera() async {
+  _getImage(ImageSource source) async {
     final pickedFile =
-        await picker.getImage(source: ImageSource.camera, imageQuality: 50);
+        await picker.getImage(source: source, imageQuality: 50);
     setState(() {
       if (pickedFile != null) {
         _image = File(pickedFile.path);
@@ -154,17 +125,6 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
     });
   }
 
-  _imgFromGallery() async {
-    final pickedFile =
-        await picker.getImage(source: ImageSource.gallery, imageQuality: 50);
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      } else {
-        print('No image selected.');
-      }
-    });
-  }
 
   void _continueBtnClick() {
     var check = _checkTECValidation();
@@ -190,7 +150,7 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
             return CircularProgressIndicator();
         } else if (snapshot.hasError) {
             model.busy=false;
-            ShowErrorDialog(context,
+            showErrorDialog(context,
               title: "Save Error", message: snapshot.error);
         }
       },

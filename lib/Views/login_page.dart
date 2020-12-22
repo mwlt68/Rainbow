@@ -167,7 +167,7 @@ class _LoginPageState extends State<LoginPage> {
         },
         verificationFailed: (FirebaseAuthException exception) {
           _scaffoldKey.currentState.hideCurrentSnackBar();
-          ShowErrorDialog(context,
+          showErrorDialog(context,
               title: "Invalid Phone Number",
               message:
                   "You may selected wrong country code or entered wrong number !");

@@ -4,13 +4,13 @@ import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow/Dialogs/my_dialogs.dart';
 import 'package:rainbow/Views/message_page.dart';
+import 'package:rainbow/common/shared_functions.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/services/navigator_service.dart';
 import 'package:rainbow/core/models/conversation.dart';
 import 'package:rainbow/core/viewmodels/conversation_model.dart';
 import 'package:rainbow/core/viewmodels/message_model.dart';
-import 'package:rainbow/static_shared_functions.dart';
 
 class ConversationPage extends StatefulWidget {
   ConversationPage({this.user});
@@ -37,7 +37,7 @@ class _ConversationPageState extends State<ConversationPage> {
           stream: model.conversations(widget.user.uid),
           builder: (context, AsyncSnapshot<List<Conversation>> snapshot) {
             if (snapshot.hasError) {
-              ShowErrorDialog(context,
+              showErrorDialog(context,
                   title: "Data could not load !", message: snapshot.error);
             } else if (snapshot.connectionState == ConnectionState.waiting) {
               return CircularProgressIndicator();

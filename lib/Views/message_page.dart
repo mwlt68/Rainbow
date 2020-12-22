@@ -4,17 +4,15 @@ import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:image_downloader/image_downloader.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow/Dialogs/my_dialogs.dart';
+import 'package:rainbow/common/shared_functions.dart';
+import 'package:rainbow/common/widgets/widgets.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/models/conversation.dart';
 import 'package:rainbow/core/services/download_service.dart';
 import 'package:rainbow/core/viewmodels/message_model.dart';
-import 'package:rainbow/static_shared_functions.dart';
-import 'package:rainbow/widgets/widgets.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class MessagePage extends StatefulWidget {
   final String userId;
@@ -30,7 +28,7 @@ class MessageSellection {
   MessageSellection(this.message, {this.didSelect = false});
   Message message;
   bool didSelect;
-  bool _isDownloading=false;
+  bool _isDownloading = false;
   String downloadId;
   int downloadProgress = 0;
   bool get isDownload {
@@ -43,7 +41,6 @@ class MessageSellection {
       downloadId = null;
     }
     _isDownloading = val;
-    
   }
 }
 
@@ -67,23 +64,9 @@ class _MessagePageState extends State<MessagePage> {
     _model = getIt<MessageModel>();
     _downloadService = DownloadService();
     ImageDownloader.callback(onProgressUpdate: (String imageId, int progress) {
-      print("id: "+imageId.toString()+"   val: "+progress.toString());
-      for (var messageSellection in cachedMessageSellections) {
-        if (messageSellection.isDownload &&
-            messageSellection.downloadId == imageId) {
-          if (progress == 100) {
-            print("snapshot");
-            messageSellection._isDownloading=false;
-            _scaffoldKey.currentState
-                .showSnackBar(SnackBar(content: Text("Download completed.")));
-          } else {
-            setState(() {
-            print("progress");
-              messageSellection.downloadProgress = progress;
-            });
-            break;
-          }
-        }
+      if (progress == 100) {
+        _scaffoldKey.currentState
+            .showSnackBar(SnackBar(content: Text("Download completed.")));
       }
     });
   }
@@ -98,7 +81,7 @@ class _MessagePageState extends State<MessagePage> {
         stream: _model.messages(widget.conversation.id),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            ShowErrorDialog(context,
+            showErrorDialog(context,
                 title: "Data could not load !", message: snapshot.error);
           } else if (snapshot.connectionState == ConnectionState.waiting) {
             if (cachedMessageSellections != null) {
@@ -243,7 +226,9 @@ class _MessagePageState extends State<MessagePage> {
           ),
           color: DefaultColors.BlueAndGrey),
       FlatButton(
-          onPressed: _deleteMessagePreCheckSure,
+          onPressed: (){
+            showYesNoDialog(context,_deleteMessages,"Deletion Transaction","Are you sure for delete this messages ?");
+          },
           child: Text(
             "Delete",
             style: TextStyle(color: DefaultColors.DarkBlue),
@@ -300,6 +285,7 @@ class _MessagePageState extends State<MessagePage> {
       },
       onLongPressEnd: (detail) {
         if (!_selectionIsActive) {
+          FocusScope.of(context).unfocus();
           _getMessageDetailDialog(messageSellection);
         }
       },
@@ -348,8 +334,8 @@ class _MessagePageState extends State<MessagePage> {
               padding: EdgeInsets.only(left: 10, right: 10),
               child: InkWell(
                 child: IconButton(
-                  onPressed: () {
-                    _showPicker(context);
+                  onPressed: () async{
+                    showPicker(context,_getImage);
                   },
                   icon: Icon(Icons.camera_alt),
                 ),
@@ -374,36 +360,7 @@ class _MessagePageState extends State<MessagePage> {
     ];
   }
 
-  // This method will work when pressed camera button.
-  void _showPicker(context) {
-    showModalBottomSheet(
-        context: context,
-        builder: (BuildContext bc) {
-          return SafeArea(
-            child: Container(
-              child: new Wrap(
-                children: <Widget>[
-                  new ListTile(
-                      leading: new Icon(Icons.photo_library),
-                      title: new Text('Photo Library'),
-                      onTap: () {
-                        _getImage(ImageSource.gallery);
-                        Navigator.of(context).pop();
-                      }),
-                  new ListTile(
-                    leading: new Icon(Icons.photo_camera),
-                    title: new Text('Camera'),
-                    onTap: () {
-                      _getImage(ImageSource.camera);
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              ),
-            ),
-          );
-        });
-  }
+
 
   /* This method will work when user get any image from gallery or camera.
   Later,This image upload to firebase and url of image save in message under the messages collection. */
@@ -422,35 +379,6 @@ class _MessagePageState extends State<MessagePage> {
       cachedMessageSellections.forEach((e) => e.didSelect = false);
       _selectionIsActive = false;
     });
-  }
-
-  void _deleteMessagePreCheckSure() {
-    AlertDialog alert = AlertDialog(
-      title: Text("Deletion Transaction"),
-      content: Text("Are you sure for delete this messages ?"),
-      actions: [
-        FlatButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text("No")),
-        FlatButton(
-            onPressed: () {
-              _deleteMessages();
-              Navigator.pop(context);
-            },
-            child: Text(
-              "Yes",
-              style: TextStyle(color: Colors.redAccent),
-            )),
-      ],
-    );
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
   }
 
   Future<void> _deleteMessages() async {
@@ -496,11 +424,11 @@ class _MessagePageState extends State<MessagePage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            MyWidgets.getRoundText(
+            mRoundText(
                 StaticFunctions.getTimeStampV2(
                     messageSellection.message.timeStamp),
                 Colors.blue),
-            MyWidgets.getRoundText(
+            mRoundText(
                 StaticFunctions.getTimeStampV3(
                     messageSellection.message.timeStamp),
                 Colors.blue),
@@ -508,52 +436,47 @@ class _MessagePageState extends State<MessagePage> {
         ),
       ));
     }
-    childrens.add(MyWidgets.getDefaultDivider);
+    childrens.add(mDivider);
     if (messageSellection.message.isMedia) {
-      childrens.add(Container(
-        margin: EdgeInsets.symmetric(vertical: 5),
-        padding: EdgeInsets.symmetric(horizontal: 25),
-        child: MyWidgets.getNormalRaisedButton(
-            "Download to gallary", Colors.blue, () {
+      childrens.add(
+        mNormalRaisedButton("Download to gallary", Colors.blue, () {
           _downloadToGalary(messageSellection);
         }),
-      ));
+      );
       // childrens.add(MyWidgets.getRaisedButton("Download to gallary", Colors.blue, () {}) );
     }
     if (messageSellection.message.message != null) {
-      childrens.add(Container(
-        margin: EdgeInsets.symmetric(vertical: 5),
-        padding: EdgeInsets.symmetric(horizontal: 25),
-        child: MyWidgets.getNormalRaisedButton(
+      childrens.add(
+        mNormalRaisedButton(
             "Copy to clickboard", Colors.blue, () {
           _copyToClickBoard(messageSellection);
         }),
-      ));
+      );
     }
+    childrens.add(
+      mNormalRaisedButton("Cancel", Colors.orangeAccent, () {
+        Navigator.pop(context);
+      }),
+    );
     return childrens;
   }
 
   Future<void> _downloadToGalary(MessageSellection messageSellection) async {
     try {
       if (messageSellection.message.isMedia && !messageSellection.isDownload) {
-        _downloadService
-            .downloadImages(messageSellection.message.message)
-            .then((imageId) {
-          messageSellection.downloadId = imageId;
-        });
-        messageSellection.isDownload = true;
+        _downloadService.downloadImages(messageSellection.message.message);
         Navigator.pop(context);
       }
     } catch (e) {
-      ShowErrorDialog(context, title: "Download Error", message: e.toString());
+      showErrorDialog(context, title: "Download Error", message: e.toString());
     }
   }
 
   void _copyToClickBoard(MessageSellection messageSellection) {
     FlutterClipboard.copy(messageSellection.message.message).then((value) {
       Navigator.pop(context);
-      _scaffoldKey.currentState.showSnackBar(SnackBar(
-          content: Text('Coppied : ' + messageSellection.message.message)));
+      _scaffoldKey.currentState.showSnackBar(mShortSnackBar(
+          'Coppied : ' + messageSellection.message.message, themeAccentColor));
     });
   }
 

@@ -39,6 +39,7 @@ dependencies:
   clipboard: ^0.1.2+8
   path_provider: ^1.6.24
   image_downloader: ^0.20.1
+  flutter_native_image: ^0.0.5+3
 dev_dependencies:
   flutter_test:
     sdk: flutter

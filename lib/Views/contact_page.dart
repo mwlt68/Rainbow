@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow/Dialogs/my_dialogs.dart';
+import 'package:rainbow/common/widgets/widgets.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/models/user.dart';
 import 'package:rainbow/core/services/navigator_service.dart';
 import 'package:rainbow/core/viewmodels/contact_model.dart';
 import 'package:rainbow/core/viewmodels/conversation_model.dart';
-import 'package:rainbow/widgets/widgets.dart';
-
 import 'message_page.dart';
 
 class ContactPage extends StatelessWidget {
@@ -69,7 +68,7 @@ ContactsList extends StatelessWidget {
           stream: model.getMyUser(),
           builder: (context, AsyncSnapshot<List<MyUser>> snapshot) {
             if (snapshot.hasError) {
-              ShowErrorDialog(context,
+              showErrorDialog(context,
                   title: "Data could not load !", message: snapshot.error);
             } else if (snapshot.connectionState == ConnectionState.waiting) {
               return CircularProgressIndicator();
@@ -91,7 +90,7 @@ ContactsList extends StatelessWidget {
       }
     }
     return ListView(
-      children: tiles.length == 0 ? [ MyWidgets.getPureText(DefaultData.ElementNotFound)] : tiles,
+      children: tiles.length == 0 ? [ mPureText(DefaultData.ElementNotFound)] : tiles,
     );
   }
   ListTile _getListTile(MyUser myUser) {

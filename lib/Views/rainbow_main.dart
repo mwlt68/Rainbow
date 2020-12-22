@@ -65,7 +65,7 @@ class _RainbowMainState extends State<RainbowMain>
           } else if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return ShowErrorDialog(context,
+            return showErrorDialog(context,
                 title: "Permission Check Error", message: snapshot.error);
           }
         });
