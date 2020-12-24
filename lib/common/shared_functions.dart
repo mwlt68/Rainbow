@@ -23,4 +23,13 @@ class StaticFunctions{
     DateFormat formatter = DateFormat('dd-MM-yyyy');
     return formatter.format(timestamp.toDate());
   }
+  static String getDateTimeV1(DateTime dateTime){
+    DateFormat formatter = DateFormat.yMMMd();
+    return formatter.format(dateTime);
+  }
+  static String getDateFormatForCompare(Timestamp timestamp){
+    DateFormat formatter = DateFormat('yyyy-MM-dd');
+    return formatter.format(timestamp.toDate());
+  }
+
 }

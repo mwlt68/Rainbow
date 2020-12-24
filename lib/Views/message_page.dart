@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:clipboard/clipboard.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:grouped_list/grouped_list.dart';
 import 'package:image_downloader/image_downloader.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:rainbow/Dialogs/my_dialogs.dart';
+import 'package:rainbow/common/dialogs/my_dialogs.dart';
 import 'package:rainbow/common/shared_functions.dart';
 import 'package:rainbow/common/widgets/widgets.dart';
 import 'package:rainbow/core/default_data.dart';
@@ -13,6 +15,7 @@ import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/models/conversation.dart';
 import 'package:rainbow/core/services/download_service.dart';
 import 'package:rainbow/core/viewmodels/message_model.dart';
+import 'package:grouped_list/grouped_list.dart';
 
 class MessagePage extends StatefulWidget {
   final String userId;
@@ -22,6 +25,12 @@ class MessagePage extends StatefulWidget {
       : super(key: key);
   @override
   _MessagePageState createState() => _MessagePageState();
+}
+
+class MessageSelectionGroup {
+  MessageSellection messageSelection;
+  String group;
+  MessageSelectionGroup(this.messageSelection, this.group);
 }
 
 class MessageSellection {
@@ -48,6 +57,7 @@ class _MessagePageState extends State<MessagePage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   Color themeAccentColor, themePrimaryColor;
   bool _isLoad = false;
+  double _mediaSize = 250;
   List<MessageSellection> cachedMessageSellections =
       new List<MessageSellection>();
   bool _selectionIsActive = false;
@@ -226,8 +236,9 @@ class _MessagePageState extends State<MessagePage> {
           ),
           color: DefaultColors.BlueAndGrey),
       FlatButton(
-          onPressed: (){
-            showYesNoDialog(context,_deleteMessages,"Deletion Transaction","Are you sure for delete this messages ?");
+          onPressed: () {
+            showYesNoDialog(context, _deleteMessages, "Deletion Transaction",
+                "Are you sure for delete this messages ?");
           },
           child: Text(
             "Delete",
@@ -238,19 +249,43 @@ class _MessagePageState extends State<MessagePage> {
   }
 
   // ListView contain a lot of gestures.
-  ListView _getListView() {
-    List<GestureDetector> gestures = new List<GestureDetector>();
-    for (var messageSellection in cachedMessageSellections) {
-      var gesture = _getGestureDetector(messageSellection);
-      if (gesture != null) {
-        gestures.add(gesture);
-      }
-    }
+  GroupedListView _getListView() {
+    GroupedListView groupedListView = _getGroupListView();
     _setListViewScrollment();
-    return ListView(
-      controller: _scrollController,
+    return groupedListView;
+
+  }
+
+  GroupedListView _getGroupListView(){
+    return GroupedListView<MessageSellection, String>(
+      controller:_scrollController ,
       shrinkWrap: true,
-      children: gestures,
+      elements: cachedMessageSellections,
+      groupBy: (element) =>
+          StaticFunctions.getDateFormatForCompare(element.message.timeStamp),
+      groupComparator: (value1, value2) => DateTime.parse(value1).compareTo( DateTime.parse(value2)),
+      groupSeparatorBuilder: (String groupByValue) =>
+          _getDailySeparator(groupByValue),
+      itemBuilder: (context, messageSellection) {
+        var gesture = _getGestureDetector(messageSellection);
+        if (gesture != null) {
+          return gesture;
+        }
+      }, // optional
+      useStickyGroupSeparators: true, // optional
+      floatingHeader: true,
+    );
+  }
+  Widget _getDailySeparator(String dateString) {
+    var date=DateTime.parse(dateString);
+    String newDateFormat=StaticFunctions.getDateTimeV1(date);
+    return Container(
+      margin: EdgeInsets.all(10),
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+            color: Colors.lightBlue[200],
+          borderRadius: BorderRadius.all(Radius.circular(20))),
+      child: Text(newDateFormat),
     );
   }
 
@@ -260,19 +295,28 @@ class _MessagePageState extends State<MessagePage> {
         selectedTileColor: DefaultColors.YellowLowOpacity,
         selected: messageSellection.didSelect,
         title: Align(
-          alignment: messageSellection.message.senderId == widget.userId
-              ? Alignment.centerRight
-              : Alignment.centerLeft,
-          child: Container(
+            alignment: messageSellection.message.senderId == widget.userId
+                ? Alignment.centerRight
+                : Alignment.centerLeft,
+            child: Container(
               padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: messageSellection.message.senderId == widget.userId
                     ? themeAccentColor
                     : Colors.white,
-                borderRadius: BorderRadius.circular(25),
+                borderRadius: BorderRadius.circular(25).subtract(
+                    messageSellection.message.senderId == widget.userId
+                        ? BorderRadius.only(bottomRight: Radius.circular(25))
+                        : BorderRadius.only(bottomLeft: Radius.circular(25))),
               ),
-              child: _getMessageContentWidget(messageSellection.message)),
-        ));
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  _getMessageContentWidget(messageSellection.message),
+                  _getMessageTime(messageSellection.message),
+                ],
+              ),
+            )));
 
     return GestureDetector(
       child: listTile,
@@ -292,14 +336,37 @@ class _MessagePageState extends State<MessagePage> {
     );
   }
 
+  Widget _getMessageTime(Message message) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: EdgeInsets.only(top: 10, right: 10),
+          child: Text(
+            StaticFunctions.getTimeStampV2(message.timeStamp),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+        )
+      ],
+    );
+  }
+
   // This method check received message is text or image.
   Widget _getMessageContentWidget(Message message) {
     if (message.isMedia) {
-      return Image.network(message.message, width: 250, height: 250);
+      return Image.network(message.message,
+          width: _mediaSize, height: _mediaSize);
     } else {
-      return Text(
-        message.message,
-        style: TextStyle(color: Colors.black),
+      return Container(
+        padding: EdgeInsets.all(10),
+        child: Text(
+          message.message,
+          style: TextStyle(color: Colors.black),
+        ),
       );
     }
   }
@@ -334,8 +401,8 @@ class _MessagePageState extends State<MessagePage> {
               padding: EdgeInsets.only(left: 10, right: 10),
               child: InkWell(
                 child: IconButton(
-                  onPressed: () async{
-                    showPicker(context,_getImage);
+                  onPressed: () async {
+                    showPicker(context, _getImage);
                   },
                   icon: Icon(Icons.camera_alt),
                 ),
@@ -359,8 +426,6 @@ class _MessagePageState extends State<MessagePage> {
           ))
     ];
   }
-
-
 
   /* This method will work when user get any image from gallery or camera.
   Later,This image upload to firebase and url of image save in message under the messages collection. */
@@ -447,8 +512,7 @@ class _MessagePageState extends State<MessagePage> {
     }
     if (messageSellection.message.message != null) {
       childrens.add(
-        mNormalRaisedButton(
-            "Copy to clickboard", Colors.blue, () {
+        mNormalRaisedButton("Copy to clickboard", Colors.blue, () {
           _copyToClickBoard(messageSellection);
         }),
       );
@@ -499,4 +563,5 @@ class _MessagePageState extends State<MessagePage> {
       _isLoad = true;
     }
   }
+
 }
