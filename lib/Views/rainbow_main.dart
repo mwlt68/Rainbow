@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:rainbow/Views/calls_page.dart';
+import 'package:rainbow/Views/settings_page.dart';
 import 'package:rainbow/Views/camera_page.dart';
 import 'package:rainbow/Views/conversation_page.dart';
 import 'package:rainbow/Views/contact_page.dart';
@@ -104,7 +104,7 @@ class _RainbowMainState extends State<RainbowMain>
                         text: "Status",
                       ),
                       Tab(
-                        text: "Calls",
+                        text: "Settings",
                       ),
                     ]),
                     Expanded(
@@ -114,7 +114,7 @@ class _RainbowMainState extends State<RainbowMain>
                         CameraPage(),
                         ConversationPage(user: widget.user),
                         StatusPage(),
-                        CallsPage(),
+                        SettingsPage(user: widget.user),
                       ]),
                     ))
                   ],

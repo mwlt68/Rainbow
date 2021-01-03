@@ -33,7 +33,7 @@ import '../../core/default_data.dart';
   get mDivider => Divider(
         indent: 10,
         endIndent: 10,
-        thickness: 1,
+        thickness: 0.7,
         color: Colors.black,
       );
 
