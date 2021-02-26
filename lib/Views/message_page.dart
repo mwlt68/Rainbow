@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:clipboard/clipboard.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:image_downloader/image_downloader.dart';

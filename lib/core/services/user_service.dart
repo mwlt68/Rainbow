@@ -29,14 +29,7 @@ class UserService{
   }
   Future<DocumentReference> registerUser(MyUser user) async {
     var ref=_fBaseFireStore.collection('Users');
-    return await ref.add(
-    {
-      'imgSrc':user.imgSrc,
-      'name':user.name,
-      'phoneNumber':user.phoneNumber,
-      'status':user.status,
-      'userId':user.userId
-    });
+    return await ref.add(user.toJson());
   }
 
 }

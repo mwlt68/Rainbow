@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rainbow/common/aes_encryption.dart';
 import 'package:rainbow/core/models/user.dart';
 
 class Conversation{
@@ -43,11 +44,12 @@ class Message{
   String senderId;
   Timestamp timeStamp;
   bool isMedia;
+  
   Message({this.id,this.message,this.senderId,this.timeStamp,this.isMedia});
   factory Message.fromSnapshot(DocumentSnapshot snapshot){
     return Message(
       id:snapshot.id,
-      message: snapshot.data()['message'],
+      message: AESEncryption.getDecryptedMessage(snapshot.data()['message']) ,
       senderId: snapshot.data()['senderId'],
       timeStamp: snapshot.data()['timeStamp'],
       isMedia: snapshot.data()['isMedia'],
@@ -55,7 +57,7 @@ class Message{
   }
   Map<String, dynamic> toJson() =>
   {
-    'message': message,
+    'message': AESEncryption.getEncryptedMessage(message),
     'senderId': senderId,
     'isMedia': isMedia,
     'timeStamp': DateTime.now(),

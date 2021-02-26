@@ -18,4 +18,11 @@ class MyUser{
       status:snapshot.data()['status'],
       );
   }
+   Map<String, dynamic> toJson() =>{
+     'imgSrc':imgSrc,
+      'name':name,
+      'phoneNumber':phoneNumber,
+      'status':status,
+      'userId':userId,
+   };
 }

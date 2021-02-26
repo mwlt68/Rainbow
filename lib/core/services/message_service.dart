@@ -33,7 +33,8 @@ class MessageService {
   }
   Future<void> sendMessage(Message message, String conversationId) async {
     var ref = _collectionRef.doc(conversationId).collection('messages');
-    await ref.add(message.toJson());
+    var messageJson=message.toJson();
+    await ref.add(messageJson);
   }
   Future<void> deleteMessage(Message message, String conversationId) async {
     await _collectionRef.doc(conversationId).collection('messages').doc(message.id).delete();

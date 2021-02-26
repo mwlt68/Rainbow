@@ -41,6 +41,7 @@ dependencies:
   image_downloader: ^0.20.1
   flutter_native_image: ^0.0.5+3
   grouped_list: ^3.7.1
+  encrypt: ^4.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
