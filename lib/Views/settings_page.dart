@@ -1,9 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rainbow/common/widgets/widgets.dart';
+import 'package:rainbow/core/locator.dart';
+import 'package:rainbow/core/services/navigator_service.dart';
+import 'package:rainbow/views/sub_pages/profile_page.dart';
 
 
 class SettingsPage extends StatelessWidget {
+  final NavigatorService _navigatorService = getIt<NavigatorService>();
   SettingsPage({this.user});
   final User user;
   @override
@@ -17,9 +21,13 @@ class SettingsPage extends StatelessWidget {
           () {},
         ),
         mDivider,
-        _getRow(Icons.info_outline, "About", () {}),
+        _getRow(Icons.info_outline, "About", () {
+          
+        }),
         mDivider,
-        _getRow(Icons.account_circle, "Profile", () {}),
+        _getRow(Icons.account_circle, "Profile", () {
+          _navigatorService.navigateTo(ProfilePage());
+        }),
         mDivider,
         _getRow(Icons.notifications, "Notifications", () {}),
         mDivider,
@@ -31,7 +39,9 @@ class SettingsPage extends StatelessWidget {
 
   Widget _getRow(IconData icon, String label, Function function) {
     return GestureDetector(
-      onTap: function,
+      onTap: (){
+        function();
+      },
       child: Container(
         padding: EdgeInsets.only(left: 20),
         child: ListTile(

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MyUser{
+  static final int StatusTextLength=150;
   String snapshotId;
   String userId;
   String name;
