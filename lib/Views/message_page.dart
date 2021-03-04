@@ -116,7 +116,7 @@ class _MessagePageState extends State<MessagePage> {
           children: [
             CircleAvatar(
               backgroundImage:
-                  NetworkImage(widget.conversation.profileImage, scale: 0.1),
+                  NetworkImage(widget.conversation.profileImage != null ? widget.conversation.profileImage :DefaultData.UserDefaultImagePath, scale: 0.1),
             ),
             Padding(
               padding: const EdgeInsets.only(left: 10),

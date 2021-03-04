@@ -79,7 +79,7 @@ class _ConversationPageState extends State<ConversationPage> {
   ListTile _creatListTile(Conversation conversation,Message lastMessage){
     return ListTile(
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(conversation.profileImage, scale: 0.1),
+        backgroundImage: NetworkImage(conversation.profileImage != null ? conversation.profileImage: DefaultData.UserDefaultImagePath, scale: 0.1),
       ),
       title: Text(conversation.name),
       subtitle:  _getListTileSubtitle(lastMessage),

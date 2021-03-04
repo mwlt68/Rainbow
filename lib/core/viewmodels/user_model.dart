@@ -32,6 +32,34 @@ class UserModel extends BaseModel {
     return docRef;
   }
 
+  Future<String> updateUserTest(MyUser user,File image,String name,String status,bool removeImage) async {
+    String oldImageUrl;
+    if(removeImage ){
+      oldImageUrl=user.imgSrc;
+      user.imgSrc=null;
+    }
+    else if(image != null){
+      var imageSrc= await _uploadUserImg(image);
+      if(user.imgSrc != null){
+        oldImageUrl=user.imgSrc;
+      }
+      user.imgSrc=imageSrc;
+    }
+    
+    if(name == null || name.isEmpty ||status == null||status.isEmpty ||status.length > MyUser.StatusTextLength){
+      return "Girilen isim yada hakkında hatalı !";
+    }
+    else{
+      user.name=name;
+      user.status=status;
+      await _userService.updateUserTest(user);
+      if(oldImageUrl != null && !oldImageUrl.isEmpty){
+        await _storageService.deleteMedia(oldImageUrl);
+        return null;
+      }
+    }
+  }
+
   Future<String> _uploadUserImg(File imgFile) async {
     if (imgFile == null) {
       return DefaultData.UserDefaultImagePath;
@@ -41,4 +69,6 @@ class UserModel extends BaseModel {
       return url;
     }
   }
+
+
 }

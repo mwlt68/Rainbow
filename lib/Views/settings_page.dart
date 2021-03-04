@@ -8,7 +8,7 @@ import 'package:rainbow/views/sub_pages/profile_page.dart';
 
 class SettingsPage extends StatelessWidget {
   final NavigatorService _navigatorService = getIt<NavigatorService>();
-  SettingsPage({this.user});
+  SettingsPage(this.user);
   final User user;
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class SettingsPage extends StatelessWidget {
         }),
         mDivider,
         _getRow(Icons.account_circle, "Profile", () {
-          _navigatorService.navigateTo(ProfilePage());
+          _navigatorService.navigateTo(ProfilePage(user));
         }),
         mDivider,
         _getRow(Icons.notifications, "Notifications", () {}),

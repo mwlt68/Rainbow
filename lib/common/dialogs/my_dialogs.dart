@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
+enum PickerMode{
+  ImageFromLibrary,
+  ImageFromCamera,
+  ImageRemove,
+  None,
+}
 showErrorDialog(@required BuildContext context,
     {String title, String message}) {
   // flutter defined function
@@ -37,9 +42,9 @@ showErrorDialog(@required BuildContext context,
     },
   );
 }
-// This method will work when pressed camera button.
-showPicker(BuildContext context,Function function) {
-    showModalBottomSheet(
+// This method will work when pressed camera button.This dialog pop method return valut that did image select.
+Future showPicker(BuildContext context,Function function)  {
+    return showModalBottomSheet(
         context: context,
         builder: (BuildContext bc) {
           return SafeArea(
@@ -48,17 +53,30 @@ showPicker(BuildContext context,Function function) {
                 children: <Widget>[
                   new ListTile(
                       leading: new Icon(Icons.photo_library),
-                      title: new Text('Photo Library'),
+                      title: new Text('Kütüphane'),
                       onTap: () {
-                        function(ImageSource.gallery);
+                        function(ImageSource.gallery,PickerMode.ImageFromLibrary);
                         Navigator.of(context).pop();
+                //        return PickerMode.ImageFromLibrary;
                       }),
                   new ListTile(
                     leading: new Icon(Icons.photo_camera),
-                    title: new Text('Camera'),
+                    title: new Text('Kamera'),
                     onTap: () {
-                      function(ImageSource.camera);
+                      function(ImageSource.camera,PickerMode.ImageFromCamera);
                       Navigator.of(context).pop();
+              //        return PickerMode.ImageFromCamera;
+
+                    },
+                  ),
+                  new ListTile(
+                    leading: new Icon(Icons.remove),
+                    title: new Text('Fotografı Kaldır'),
+                    onTap: () {
+                      function(null,PickerMode.ImageRemove);
+                      Navigator.of(context).pop();
+                  //    return PickerMode.ImageRemove;
+
                     },
                   ),
                 ],
@@ -66,6 +84,7 @@ showPicker(BuildContext context,Function function) {
             ),
           );
         });
+
   }
 showYesNoDialog(BuildContext context, Function function,String title,String content,{String yesBtnText="Yes",String noBtnText="No"}) {
     AlertDialog alert = AlertDialog(

@@ -99,7 +99,7 @@ ContactsList extends StatelessWidget {
     if(name.contains(query2)){
       return ListTile(
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(myUser.imgSrc),
+        backgroundImage: NetworkImage(myUser.imgSrc != null ?myUser.imgSrc : DefaultData.UserDefaultImagePath),
       ),
       title: Text(myUser.name),
       subtitle: Text(myUser.status),

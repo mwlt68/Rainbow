@@ -114,7 +114,7 @@ class _RainbowMainState extends State<RainbowMain>
                         CameraPage(),
                         ConversationPage(user: widget.user),
                         StatusPage(),
-                        SettingsPage(user: widget.user),
+                        SettingsPage(widget.user),
                       ]),
                     ))
                   ],

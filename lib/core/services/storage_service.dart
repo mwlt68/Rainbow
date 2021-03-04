@@ -13,9 +13,20 @@ class StorageService {
         .putFile(file);
 
     uploadTask.snapshotEvents.listen((event) {});
-
     var storageRef = await uploadTask;
-
     return await storageRef.ref.getDownloadURL();
+  }
+
+  Future<bool > deleteMedia(String url) async{
+    if (url != null && !url.isEmpty) {
+      Reference reference =
+        await FirebaseStorage.instance.refFromURL(url);
+
+      if(reference != null){
+        await reference.delete();
+        return true;
+      }
+    }
+    return false;
   }
 }
