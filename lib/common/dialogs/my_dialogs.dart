@@ -43,7 +43,7 @@ showErrorDialog(@required BuildContext context,
   );
 }
 // This method will work when pressed camera button.This dialog pop method return valut that did image select.
-Future showPicker(BuildContext context,Function function)  {
+Future showPicker(BuildContext context,Function function,{bool removeIsVisiable=false})  {
     return showModalBottomSheet(
         context: context,
         builder: (BuildContext bc) {
@@ -57,7 +57,6 @@ Future showPicker(BuildContext context,Function function)  {
                       onTap: () {
                         function(ImageSource.gallery,PickerMode.ImageFromLibrary);
                         Navigator.of(context).pop();
-                //        return PickerMode.ImageFromLibrary;
                       }),
                   new ListTile(
                     leading: new Icon(Icons.photo_camera),
@@ -65,19 +64,20 @@ Future showPicker(BuildContext context,Function function)  {
                     onTap: () {
                       function(ImageSource.camera,PickerMode.ImageFromCamera);
                       Navigator.of(context).pop();
-              //        return PickerMode.ImageFromCamera;
 
                     },
                   ),
-                  new ListTile(
-                    leading: new Icon(Icons.remove),
-                    title: new Text('Fotografı Kaldır'),
-                    onTap: () {
-                      function(null,PickerMode.ImageRemove);
-                      Navigator.of(context).pop();
-                  //    return PickerMode.ImageRemove;
+                  Visibility(
+                    visible: removeIsVisiable,
+                    child: new ListTile(
+                      leading: new Icon(Icons.remove),
+                      title: new Text('Fotografı Kaldır'),
+                      onTap: () {
+                        function(null,PickerMode.ImageRemove);
+                        Navigator.of(context).pop();
 
-                    },
+                      },
+                    ),
                   ),
                 ],
               ),

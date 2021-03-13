@@ -22,8 +22,8 @@ class UserRegisterPage extends StatefulWidget {
 
 class _UserRegisterPageState extends State<UserRegisterPage> {
   final NavigatorService _navigatorService = getIt<NavigatorService>();
-
   final GlobalKey<ScaffoldState> _scaffoldkey = new GlobalKey<ScaffoldState>();
+  Color themeColor;
   TextEditingController visiableNameTEC;
   TextEditingController statusTEC;
   File _image;
@@ -39,6 +39,7 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    themeColor= Theme.of(context).primaryColor;
     model = getIt<UserModel>();
     return ChangeNotifierProvider(
         create: (BuildContext context) => model,
@@ -75,56 +76,56 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
                     visiableNameTEC, DefaultData.VisiableName, "Nameless"),
                 mTextView(statusTEC, DefaultData.Status,
                     DefaultData.UserDefaultStatus),
-                mHugeRaisedButton( "Continue",Theme.of(context).accentColor, _continueBtnClick),
-                Visibility(visible: model.busy,child: CircularProgressIndicator())
+                mHugeRaisedButton("Continue", Theme.of(context).accentColor,
+                    _continueBtnClick),
+                Visibility(
+                    visible: model.busy, child: CircularProgressIndicator())
               ],
             ))
           ],
         ),
       );
-  Widget get getImagePicker => GestureDetector(
-        onTap: () async{
-          showPicker(context,_getImage);
-        },
-        child: CircleAvatar(
-          radius: 55,
-          backgroundColor: Color(0xffFDCF09),
-          child: _image != null
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
-                  child: Image.file(
-                    _image,
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.fitHeight,
-                  ),
-                )
-              : Container(
-                  decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(50)),
-                  width: 100,
-                  height: 100,
-                  child: Icon(
-                    Icons.camera_alt,
-                    color: Colors.grey[800],
-                  ),
+  Widget get getImagePicker => Container(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Stack(
+              children: [
+                CircleAvatar(
+                  radius: 100,
+                  backgroundImage:_image== null ? NetworkImage(DefaultData.UserDefaultImagePath) : FileImage(_image) ,
                 ),
-        ),
-      );
+                Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: FloatingActionButton(
+                      child: Icon(
+                        Icons.camera_alt,
+                        color: Colors.white,
+                      ),
+                      onPressed: ()  {
+                        showPicker(context, _getImage);
+                      },
+                      backgroundColor: themeColor,
+                    ))
+              ],
+              
+            ),
+          );
 
-  _getImage(ImageSource source) async {
-    final pickedFile =
-        await picker.getImage(source: source, imageQuality: 50);
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      } else {
-        print('No image selected.');
-      }
-    });
+  _getImage(ImageSource source, PickerMode pickerMode) async {
+    if (pickerMode == PickerMode.ImageRemove) {
+      setState(() {
+        _image = null;
+      });
+    } else if (pickerMode != PickerMode.None) {
+      final pickedFile =
+          await picker.getImage(source: source, imageQuality: 50);
+      setState(() {
+        if (pickedFile != null) {
+          _image = File(pickedFile.path);
+        }
+      });
+    }
   }
-
 
   void _continueBtnClick() {
     var check = _checkTECValidation();
@@ -134,23 +135,23 @@ class _UserRegisterPageState extends State<UserRegisterPage> {
   }
 
   void registerUser() {
-    model.busy=true;
+    model.busy = true;
     FutureBuilder<DocumentReference>(
       future: model.registerUser(
           widget.user, _image, visiableNameTEC.text, statusTEC.text),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          model.busy=false;
+          model.busy = false;
           _navigatorService.navigateTo(
               RainbowMain(
                 user: widget.user,
               ),
               isRemoveUntil: true);
         } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
+          return CircularProgressIndicator();
         } else if (snapshot.hasError) {
-            model.busy=false;
-            showErrorDialog(context,
+          model.busy = false;
+          showErrorDialog(context,
               title: "Save Error", message: snapshot.error);
         }
       },

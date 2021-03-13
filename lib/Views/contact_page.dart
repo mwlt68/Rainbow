@@ -8,6 +8,7 @@ import 'package:rainbow/core/models/user.dart';
 import 'package:rainbow/core/services/navigator_service.dart';
 import 'package:rainbow/core/viewmodels/contact_model.dart';
 import 'package:rainbow/core/viewmodels/conversation_model.dart';
+import 'package:rainbow/views/sub_pages/group_members_select_page.dart';
 import 'message_page.dart';
 
 class ContactPage extends StatelessWidget {
@@ -33,20 +34,16 @@ class ContactPage extends StatelessWidget {
   }
 }
 
-class 
-ContactsList extends StatelessWidget {
+class ContactsList extends StatelessWidget {
   final NavigatorService _navigatorService = getIt<NavigatorService>();
+  Color themeAccentColor;
   String currentUserId;
   String query;
   List<MyUser> myUsers;
-  ContactsList(
-    this.currentUserId,
-    {
-    Key key,
-    this.query,
-  }) : super(key: key);
+  ContactsList(this.currentUserId,{ Key key,this.query,}) : super(key: key);
 
   Widget build(BuildContext context) {
+    themeAccentColor=Theme.of(context).accentColor;
     var model = getIt<ContactModel>();
     return FutureBuilder(
         future: model.getContatcs(),
@@ -73,6 +70,10 @@ ContactsList extends StatelessWidget {
             } else if (snapshot.connectionState == ConnectionState.waiting) {
               return CircularProgressIndicator();
             }
+            var ownUser=snapshot.data.where((element) => element.userId== this.currentUserId);
+            if(ownUser.isNotEmpty){
+              snapshot.data.remove(ownUser.first);
+            }
             myUsers=snapshot.data;
             myUsers.sort((a,b)=> a.name.toString().compareTo(b.name.toString()));
             return Center(child: getListView());
@@ -80,10 +81,11 @@ ContactsList extends StatelessWidget {
     );
   }
   ListView getListView(){
-    List<ListTile> tiles= new List<ListTile>();
+    List<Widget> tiles= new List<Widget>();
+    var groupTile=_getGroupConversationButton();
+    tiles.add(groupTile);
     for (var myUser in myUsers) {
-      if(myUser.userId==currentUserId)
-        continue;
+
       var tile = _getListTile(myUser);
       if(tile != null){
         tiles.add(tile);
@@ -99,7 +101,7 @@ ContactsList extends StatelessWidget {
     if(name.contains(query2)){
       return ListTile(
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(myUser.imgSrc != null ?myUser.imgSrc : DefaultData.UserDefaultImagePath),
+        backgroundImage: NetworkImage(myUser.imgSrc != null ? myUser.imgSrc : DefaultData.UserDefaultImagePath),
       ),
       title: Text(myUser.name),
       subtitle: Text(myUser.status),
@@ -110,6 +112,22 @@ ContactsList extends StatelessWidget {
         }, 
       );
     }
+  }
+
+  Ink _getGroupConversationButton(){
+    return 
+    Ink(
+      color: themeAccentColor,
+      child:ListTile(
+        leading: CircleAvatar(
+          backgroundColor: Colors.white,
+          child: Icon(Icons.group,color: Colors.black,),
+        ),
+        title: Text("Group Conversation",style: TextStyle(color: Colors.white),),
+          onTap: () async {
+            _navigatorService.navigateTo(GroupMembersSellect(myUsers));
+        }, 
+      ));
   }
 
 }

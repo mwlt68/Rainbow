@@ -47,7 +47,7 @@ class UserModel extends BaseModel {
     }
     
     if(name == null || name.isEmpty ||status == null||status.isEmpty ||status.length > MyUser.StatusTextLength){
-      return "Girilen isim yada hakkında hatalı !";
+      return "Name or status have an error !";
     }
     else{
       user.name=name;

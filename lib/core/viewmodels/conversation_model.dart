@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:rainbow/core/locator.dart';
-import 'package:rainbow/core/models/user.dart';
 import 'package:rainbow/core/services/conversation_service.dart';
 import 'package:rainbow/core/models/conversation.dart';
 import 'package:rainbow/core/services/user_service.dart';

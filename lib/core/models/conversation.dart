@@ -3,6 +3,7 @@ import 'package:rainbow/common/aes_encryption.dart';
 import 'package:rainbow/core/models/user.dart';
 
 class Conversation{
+  static final int GroupMaxMember=25;
   String id;
   String name;
   String profileImage;

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow/common/dialogs/my_dialogs.dart';
+import 'package:rainbow/common/widgets/widgets.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/models/user.dart';
@@ -65,7 +66,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _getScaffold(Color themeColor) {
     return Scaffold(
-      resizeToAvoidBottomPadding: false,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text("Profile"),
         backgroundColor: themeColor,
@@ -76,9 +77,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 margin: EdgeInsets.all(10),
                 child: FlatButton(
                   color: Theme.of(context).accentColor,
-                  onPressed: (){_saveButton();},
+                  onPressed: (){
+                      _saveButton();
+                    },
                   child: Text(
-                    "Kaydet",
+                    "Save",
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
@@ -95,36 +98,16 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: Stack(
-              children: [
-                CircleAvatar(
-                  radius: 100,
-                  backgroundImage: _getBackgroundImage(),
-                ),
-                Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: FloatingActionButton(
-                      child: Icon(
-                        Icons.camera_alt,
-                        color: Colors.white,
-                      ),
-                      onPressed: ()  {
-                        showPicker(context, _getImage);
-                      },
-                      backgroundColor: themeColor,
-                    ))
-              ],
-              overflow: Overflow.visible,
-            ),
+          StackImagePicker(
+            context,
+            _getBackgroundImage(),
+            _getImage
           ),
           Container(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: TextField(
               onChanged: (val) {
-                if (!_didChange) {
+                if (!_didChange && val != _myUser.name) {
                   setState(() {
                     _didChange = true;
                   });
@@ -135,13 +118,14 @@ class _ProfilePageState extends State<ProfilePage> {
                   filled: true,
                   fillColor: Colors.white,
                   border: InputBorder.none,
-                  hintText: 'İsminizi Giriniz'),
+                  hintText: 'Enter a name'
+                ),
             ),
           ),
           Container(
               padding: EdgeInsets.symmetric(horizontal: 10),
               child: Text(
-                "Bu bir kullanıcı adı değildir.Bu isim sadece kişilerin görebilecektir.",
+                "This is not a username. This name will only be visible to people.",
                 style: TextStyle(
                   fontWeight: FontWeight.w300,
                   letterSpacing: 0.7,
@@ -149,6 +133,7 @@ class _ProfilePageState extends State<ProfilePage> {
               )),
           GestureDetector(
             onTap: () async {
+              FocusManager.instance.primaryFocus.unfocus();
               String result = await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => SetStatus(_statusText)),
@@ -212,9 +197,8 @@ class _ProfilePageState extends State<ProfilePage> {
         });
       } else {}
     }
-
-
   }
+
   ImageProvider  _getBackgroundImage(){
 
     if(_selectedImage == null){
@@ -242,7 +226,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _myUser, _selectedImage, _nameTEC.value.text, _statusText,_removeUserImg);
     _model.busy = false;
     if (response != null) {
-      showErrorDialog(context, title: "Güncelleme Hatası", message: response);
+      showErrorDialog(context, title: "Update Error", message: response);
     } else {
       setState(() {
         _didChange = false;
@@ -274,21 +258,18 @@ class _SetStatusState extends State<SetStatus> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomPadding: false,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text("Hakkımda"),
+        title: Text("Status"),
         backgroundColor: Theme.of(context).primaryColor,
         actions: [
           Container(
             margin: EdgeInsets.all(10),
             child: Visibility(
               visible: _didChange,
-              child: FlatButton(
-                color: Theme.of(context).accentColor,
-                child: Text(
-                  "Tamam",
-                  style: TextStyle(color: Colors.white),
-                ),
+              child: FloatingActionButton(
+                backgroundColor: Theme.of(context).accentColor,
+                child: Icon(Icons.done,color: Colors.white,),
                 onPressed: () {
                   Navigator.pop(context, _statusTEC.text);
                 },
@@ -306,7 +287,7 @@ class _SetStatusState extends State<SetStatus> {
               padding: EdgeInsets.symmetric(vertical: 20),
               child: TextField(
                 onChanged: (val) {
-                  if (!_didChange) {
+                  if (!_didChange && val != widget.statusText) {
                     setState(() {
                       _didChange = true;
                     });
@@ -325,10 +306,10 @@ class _SetStatusState extends State<SetStatus> {
                 ),
               ),
             ),
-            _getStatusOption("Meşgul"),
-            _getStatusOption("İşte"),
-            _getStatusOption("Evde"),
-            _getStatusOption("Kod Yazıyor..."),
+            _getStatusOption("Busy"),
+            _getStatusOption("At Job"),
+            _getStatusOption("At Home"),
+            _getStatusOption("Write Code..."),
           ],
         ),
       ),
