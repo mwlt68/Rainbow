@@ -166,7 +166,8 @@ class _MessagePageState extends State<MessagePage> {
         image: DecorationImage(
             //Background Image
             image: NetworkImage(
-                "https://i.pinimg.com/originals/2b/82/95/2b829561dee9e42f1e39983ab023821a.png"),
+                "https://i.pinimg.com/originals/2b/82/95/2b829561dee9e42f1e39983ab023821a.png"
+              ),
             fit: BoxFit.fill),
       ),
       child: Column(children: [
@@ -428,14 +429,18 @@ class _MessagePageState extends State<MessagePage> {
 
   /* This method will work when user get any image from gallery or camera.
   Later,This image upload to firebase and url of image save in message under the messages collection. */
-  _getImage(ImageSource imgSource) async {
-    final pickedFile = await picker.getImage(source: imgSource);
-    if (pickedFile != null) {
-      var _image = File(pickedFile.path);
-      await _model.sendMessage(true, widget.userId, widget.conversation.id,
-          file: _image);
-      _scroolAnimateToEnd();
-    } else {}
+  
+
+  _getImage(ImageSource imgSource,PickerMode pickerMode) async {
+    if(pickerMode != PickerMode.None){
+      final pickedFile = await picker.getImage(source: imgSource);
+      if (pickedFile != null) {
+        var _image = File(pickedFile.path);
+        await _model.sendMessage(true, widget.userId, widget.conversation.id,
+            file: _image);
+        _scroolAnimateToEnd();
+      }
+    }
   }
 
   void _selectionModeCancel() {
