@@ -2,8 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:rainbow/Views/login_page.dart';
-import 'package:rainbow/core/services/auth_service.dart';
-import 'package:rainbow/core/services/navigator_service.dart';
+import 'package:rainbow/core/models/user.dart';
+import 'package:rainbow/core/services/firebase_services/auth_service.dart';
+import 'package:rainbow/core/services/other_services/navigator_service.dart';
 
 import 'Views/user_register_page.dart';
 import 'core/locator.dart';
@@ -37,6 +38,7 @@ class MyApp extends StatelessWidget {
       builder: (context, AsyncSnapshot<User> snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData && snapshot.data != null) {
+            MyUser.CurrentUserId=snapshot.data.uid;
             return UserRegisterPage(
               user: snapshot.data,
             );

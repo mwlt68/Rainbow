@@ -1,48 +1,58 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:rainbow/core/default_data.dart';
+import 'package:rainbow/core/dto_models/conversation_dto_model.dart';
 import 'package:rainbow/core/locator.dart';
-import 'package:rainbow/core/services/message_service.dart';
-import 'package:rainbow/core/models/conversation.dart';
-import 'package:rainbow/core/services/storage_service.dart';
+import 'package:rainbow/core/models/message.dart';
+import 'package:rainbow/core/services/firebase_services/message_service.dart';
+import 'package:rainbow/core/services/firebase_services/storage_service.dart';
 
 class MessageModel with ChangeNotifier{
   final MessageService _messageService=getIt<MessageService>();
   final StorageService _storageService=getIt<StorageService>();
 
-  Stream<List<Message>> messages (String _conversationId){
-    return _messageService.getMessages(_conversationId);
+  Stream<List<Message>> messages (ConversationDTO conversationDTO){
+    return _messageService.getMessages(conversationDTO.id,conversationDTO.conversationType);
   }
   
-  Stream<Message> getLastMessage (String _conversationId){
-    return _messageService.getLastMessageTest(_conversationId);
+  Stream<Message> getLastMessage (ConversationDTO conversationDTO){
+    return _messageService.getLastMessageTest(conversationDTO.id,conversationDTO.conversationType);
   }
   
-  Future<void> deleteMessages(List<Message> messages,String conversationId) async {
+  Future<void> deleteMessages(List<Message> messages,ConversationDTO conversationDTO) async {
     if(messages == null || messages.length ==0){
       return;
     }else{
       for (var message in messages) {
-        await _messageService.deleteMessage(message, conversationId);
+        await _messageService.deleteMessage(message, conversationDTO.conversationType,conversationDTO.id);
       }
     }
     
   }
-  Future<void> sendMessage(bool isMedia,String senderId,String _conversationId,{String message,File file}) async {
+  Future<void> sendMessage(bool isMedia,String senderId,ConversationDTO conversationDTO,{String messageParam,File file}) async {
+    Message message = new Message(
+      senderId: senderId,
+      isMedia: isMedia,
+      usersRead: [],
+      timeStamp:Timestamp.fromDate(DateTime.now()),
+    );
     if(isMedia){
       if(file != null){
         File compressedFile=await _compressFile(file);
         String  mediaUrl=await _uploadMedia(compressedFile);
-        await _messageService.sendMessage(new Message(senderId: senderId,message: mediaUrl,isMedia: isMedia), _conversationId);
+        message.message=mediaUrl;
+        await _messageService.sendMessage(message, conversationDTO.conversationType,conversationDTO.id);
       }
       else{
-        return ;
+        return;
       }
     }
     else{
-      await _messageService.sendMessage(new Message(senderId: senderId,message: message,isMedia: isMedia), _conversationId);
+      message.message= messageParam;
+      await _messageService.sendMessage(message, conversationDTO.conversationType,conversationDTO.id);
     }
   }
   Future<File> _compressFile(File file) async{

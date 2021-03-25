@@ -1,66 +1,42 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:rainbow/common/aes_encryption.dart';
-import 'package:rainbow/core/models/user.dart';
 
-class Conversation{
-  static final int GroupMaxMember=25;
+class SingleConversation{
   String id;
-  String name;
-  String profileImage;
   List<String> members;
-  bool isGroup;
-  List<MyUser> myUsers;
-  Conversation({this.id,this.name,this.profileImage,this.isGroup,this.members});
-  factory Conversation.fromSnapshot(DocumentSnapshot snapshot){
-    return Conversation(
+  SingleConversation({this.id,this.members});
+  factory SingleConversation.fromSnapshot(DocumentSnapshot snapshot){
+    return SingleConversation(
       id:snapshot.id,
-      name: 'Group Test',
-      profileImage:"https://picsum.photos/200",
-      isGroup:snapshot.data()['isGroup'],
       members: List.from(snapshot.data()['members']),
       );
   }
   Map<String, dynamic> toJson() =>
   {
-    'name': name,
-    'profileImage': profileImage,
-    'isGroup': isGroup,
     'members': members,
   };
-  MyUser getOtherUser(String currentUserId){
-    if(myUsers != null && !isGroup){
-      if(myUsers[0].userId != currentUserId){
-        return myUsers.elementAt(0);
-      }
-      else{
-        return myUsers.elementAt(1);
-      }
-    }
-    return null;
-  }
 }
-class Message{
+
+class GroupConversation{
   String id;
-  String message;
-  String senderId;
-  Timestamp timeStamp;
-  bool isMedia;
-  
-  Message({this.id,this.message,this.senderId,this.timeStamp,this.isMedia});
-  factory Message.fromSnapshot(DocumentSnapshot snapshot){
-    return Message(
+  String name;
+  String profileImage;
+  Timestamp createDate;
+  List<String> members;
+  GroupConversation({this.id,this.name,this.profileImage,this.members,this.createDate});
+  factory GroupConversation.fromSnapshot(DocumentSnapshot snapshot){
+    return GroupConversation(
       id:snapshot.id,
-      message: AESEncryption.getDecryptedMessage(snapshot.data()['message']) ,
-      senderId: snapshot.data()['senderId'],
-      timeStamp: snapshot.data()['timeStamp'],
-      isMedia: snapshot.data()['isMedia'],
+      name:snapshot.data()['name'],
+      profileImage: snapshot.data()['profileImage'],
+      createDate: snapshot.data()['createDate'],
+      members: List.from(snapshot.data()['members']),
     );
   }
   Map<String, dynamic> toJson() =>
   {
-    'message': AESEncryption.getEncryptedMessage(message),
-    'senderId': senderId,
-    'isMedia': isMedia,
-    'timeStamp': DateTime.now(),
+    'name': name,
+    'profileImage': profileImage,
+    'members': members,
+    'createDate': createDate,
   };
 }

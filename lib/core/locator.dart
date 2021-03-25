@@ -1,9 +1,9 @@
 import 'package:get_it/get_it.dart';
-import 'package:rainbow/core/services/conversation_service.dart';
-import 'package:rainbow/core/services/message_service.dart';
-import 'package:rainbow/core/services/navigator_service.dart';
-import 'package:rainbow/core/services/storage_service.dart';
-import 'package:rainbow/core/services/user_service.dart';
+import 'package:rainbow/core/services/firebase_services/conversation_service.dart';
+import 'package:rainbow/core/services/firebase_services/message_service.dart';
+import 'package:rainbow/core/services/other_services/navigator_service.dart';
+import 'package:rainbow/core/services/firebase_services/storage_service.dart';
+import 'package:rainbow/core/services/firebase_services/user_service.dart';
 import 'package:rainbow/core/viewmodels/contact_model.dart';
 import 'package:rainbow/core/viewmodels/conversation_model.dart';
 import 'package:rainbow/core/viewmodels/message_model.dart';

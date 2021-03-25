@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:contacts_service/contacts_service.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:rainbow/core/services/user_service.dart';
+import 'package:rainbow/core/services/firebase_services/user_service.dart';
 import 'package:rainbow/core/models/user.dart';
 import 'package:rainbow/core/viewmodels/base_model.dart';
 

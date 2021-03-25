@@ -4,8 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
-import 'package:rainbow/core/services/storage_service.dart';
-import 'package:rainbow/core/services/user_service.dart';
+import 'package:rainbow/core/services/firebase_services/storage_service.dart';
+import 'package:rainbow/core/services/firebase_services/user_service.dart';
 import 'package:rainbow/core/models/user.dart';
 import 'package:rainbow/core/viewmodels/base_model.dart';
 
@@ -31,7 +31,9 @@ class UserModel extends BaseModel {
     var docRef=_userService.registerUser(myUser);
     return docRef;
   }
-
+  Future<List<MyUser>> getMyUsersFromIds(List<String> userIds) {
+    return _userService.getUsersFromIdsFuture(userIds);
+  }
   Future<String> updateUserTest(MyUser user,File image,String name,String status,bool removeImage) async {
     String oldImageUrl;
     if(removeImage ){

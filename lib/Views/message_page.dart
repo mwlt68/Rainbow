@@ -10,17 +10,17 @@ import 'package:rainbow/common/dialogs/my_dialogs.dart';
 import 'package:rainbow/common/shared_functions.dart';
 import 'package:rainbow/common/widgets/widgets.dart';
 import 'package:rainbow/core/default_data.dart';
+import 'package:rainbow/core/dto_models/conversation_dto_model.dart';
 import 'package:rainbow/core/locator.dart';
-import 'package:rainbow/core/models/conversation.dart';
-import 'package:rainbow/core/services/download_service.dart';
+import 'package:rainbow/core/models/message.dart';
+import 'package:rainbow/core/models/user.dart';
+import 'package:rainbow/core/services/other_services/download_service.dart';
 import 'package:rainbow/core/viewmodels/message_model.dart';
 import 'package:grouped_list/grouped_list.dart';
 
 class MessagePage extends StatefulWidget {
-  final String userId;
-  final Conversation conversation;
-
-  const MessagePage({Key key, this.userId, this.conversation})
+  final ConversationDTO conversation;
+  const MessagePage({Key key,this.conversation})
       : super(key: key);
   @override
   _MessagePageState createState() => _MessagePageState();
@@ -87,7 +87,7 @@ class _MessagePageState extends State<MessagePage> {
     return ChangeNotifierProvider(
       create: (context) => _model,
       child: StreamBuilder<List<Message>>(
-        stream: _model.messages(widget.conversation.id),
+        stream: _model.messages(widget.conversation),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             showErrorDialog(context,
@@ -116,12 +116,12 @@ class _MessagePageState extends State<MessagePage> {
           children: [
             CircleAvatar(
               backgroundImage:
-                  NetworkImage(widget.conversation.profileImage != null ? widget.conversation.profileImage :DefaultData.UserDefaultImagePath, scale: 0.1),
+                  NetworkImage(widget.conversation.imgSrc ?? DefaultData.UserDefaultImagePath, scale: 0.1),
             ),
             Padding(
               padding: const EdgeInsets.only(left: 10),
               child: Text(
-                widget.conversation.name,
+                widget.conversation.visiableName,
                 overflow: TextOverflow.clip,
               ),
             ),
@@ -295,17 +295,17 @@ class _MessagePageState extends State<MessagePage> {
         selectedTileColor: DefaultColors.YellowLowOpacity,
         selected: messageSellection.didSelect,
         title: Align(
-            alignment: messageSellection.message.senderId == widget.userId
+            alignment: messageSellection.message.senderId == MyUser.CurrentUserId
                 ? Alignment.centerRight
                 : Alignment.centerLeft,
             child: Container(
               padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: messageSellection.message.senderId == widget.userId
+                color: messageSellection.message.senderId == MyUser.CurrentUserId
                     ? themeAccentColor
                     : Colors.white,
                 borderRadius: BorderRadius.circular(25).subtract(
-                    messageSellection.message.senderId == widget.userId
+                    messageSellection.message.senderId == MyUser.CurrentUserId
                         ? BorderRadius.only(bottomRight: Radius.circular(25))
                         : BorderRadius.only(bottomLeft: Radius.circular(25))),
               ),
@@ -418,8 +418,8 @@ class _MessagePageState extends State<MessagePage> {
             icon: Icon(Icons.send, color: Colors.white),
             onPressed: () async {
               await _model.sendMessage(
-                  false, widget.userId, widget.conversation.id,
-                  message: _textController.text);
+                  false,MyUser.CurrentUserId, widget.conversation,
+                  messageParam: _textController.text);
               _textController.text = "";
               _scroolAnimateToEnd();
             },
@@ -436,7 +436,7 @@ class _MessagePageState extends State<MessagePage> {
       final pickedFile = await picker.getImage(source: imgSource);
       if (pickedFile != null) {
         var _image = File(pickedFile.path);
-        await _model.sendMessage(true, widget.userId, widget.conversation.id,
+        await _model.sendMessage(true, MyUser.CurrentUserId, widget.conversation,
             file: _image);
         _scroolAnimateToEnd();
       }
@@ -457,7 +457,7 @@ class _MessagePageState extends State<MessagePage> {
         selectedMessages.add(element.message);
       }
     });
-    await _model.deleteMessages(selectedMessages, widget.conversation.id);
+    await _model.deleteMessages(selectedMessages, widget.conversation);
     setState(() {
       _selectionIsActive = false;
     });

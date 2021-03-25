@@ -2,16 +2,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:rainbow/Views/settings_page.dart';
-import 'package:rainbow/Views/camera_page.dart';
-import 'package:rainbow/Views/conversation_page.dart';
-import 'package:rainbow/Views/contact_page.dart';
-import 'package:rainbow/Views/login_page.dart';
-import 'package:rainbow/Views/status_page.dart';
+import 'package:rainbow/views/settings_page.dart';
+import 'package:rainbow/views/camera_page.dart';
+import 'package:rainbow/views/conversation_page.dart';
+import 'package:rainbow/views/contact_page.dart';
+import 'package:rainbow/views/login_page.dart';
+import 'package:rainbow/views/status_page.dart';
 import 'package:rainbow/common/dialogs/my_dialogs.dart';
 import 'package:rainbow/core/locator.dart';
-import 'package:rainbow/core/services/auth_service.dart';
-import 'package:rainbow/core/services/navigator_service.dart';
+import 'package:rainbow/core/services/firebase_services/auth_service.dart';
+import 'package:rainbow/core/services/other_services/navigator_service.dart';
 import 'package:rainbow/core/viewmodels/contact_model.dart';
 
 class RainbowMain extends StatefulWidget {

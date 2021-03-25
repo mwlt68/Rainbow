@@ -1,57 +1,89 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:async/async.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:rainbow/core/default_data.dart';
+import 'package:rainbow/core/dto_models/conversation_dto_model.dart';
 import 'package:rainbow/core/locator.dart';
-import 'package:rainbow/core/services/conversation_service.dart';
+import 'package:rainbow/core/model_converter/conversation_model_converter.dart';
+import 'package:rainbow/core/services/firebase_services/conversation_service.dart';
 import 'package:rainbow/core/models/conversation.dart';
-import 'package:rainbow/core/services/user_service.dart';
+import 'package:rainbow/core/services/firebase_services/storage_service.dart';
+import 'package:rainbow/core/services/firebase_services/user_service.dart';
 
 class ConversationModel with ChangeNotifier {
-  final ConversationService _conversationService = getIt<ConversationService>();
-  final UserService _userService = getIt<UserService>();
+  ConversationService _conversationService;
+  UserService _userService;
+  ConversationModelConverter _conversationModelConverter;
+  StorageService _storageService;
 
-  Stream<List<Conversation>> conversations(String userId) async* {
-    final stream = _conversationService.getConversations(userId);
-    List<Conversation> resultConversations = [];
-    await for (var conversationList in stream) {
-      for (var conversation in conversationList) {
-        var conversationComplete =
-            await _getConversationUsers(conversation, userId);
-        if (conversationComplete != null) {
-          resultConversations.add(conversationComplete);
+  ConversationModel() {
+    _conversationService = getIt<ConversationService>();
+    _userService = getIt<UserService>();
+    _storageService = getIt<StorageService>();
+    _conversationModelConverter = new ConversationModelConverter(_userService);
+  }
+
+  Stream<List<ConversationDTO>> conversations(String userId) async* {
+    final Stream<List<SingleConversation>> singleStream =
+        _conversationService.getSingleConversations(userId);
+    final Stream<List<GroupConversation>> groupStream =
+        _conversationService.getGroupConversations(userId);
+    var bothStreams =
+        StreamZip([singleStream, groupStream]).asBroadcastStream();
+    List<ConversationDTO> resultConversations = [];
+    await for (var stream in bothStreams) {
+      for (var conversations in stream) {
+        for (var conversation in conversations) {
+          if (conversation is SingleConversation) {
+            SingleConversationDTO conversationDTO =
+                await _conversationModelConverter.SingleConversationToDTO(
+                    conversation);
+            if (conversationDTO != null) {
+              resultConversations.add(conversationDTO);
+            }
+          } else if (conversation is GroupConversation) {
+            GroupConversationDTO conversationDTO =
+                await _conversationModelConverter.GroupConversationToDTO(
+                    conversation);
+            if (conversationDTO != null) {
+              resultConversations.add(conversationDTO);
+            }
+          }
         }
       }
       yield resultConversations;
     }
   }
 
-  Future<Conversation> _getConversationUsers(
-      Conversation conversation, String currentUserId) async {
-    List<String> userIdList = new List<String>();
-    for (var member in conversation.members) {
-      userIdList.add(member);
-    }
-    userIdList = userIdList.toSet().toList();
-    var myUsersStream = _userService.getUserFromUserIds(userIdList);
-    await for (var users in myUsersStream) {
-      conversation.myUsers = users;
-      var otherUser = conversation.getOtherUser(currentUserId);
-      if (otherUser != null) {
-        conversation.profileImage = otherUser.imgSrc;
-        conversation.name = otherUser.name;
-      }
-      return conversation;
-    }
+  Future<GroupConversationDTO> startGroupConversation(List<String> groupUsersId,String groupName,File profileImageFile)async{
+    String path=await _uploadMedia(profileImageFile);
+    GroupConversation conversation = new GroupConversation(members: groupUsersId,name: groupName,profileImage:path,createDate:Timestamp.fromDate(DateTime.now()), );
+    var conversationAddResult=await _conversationService.startGroupConversation(conversation);
+    return _conversationModelConverter.GroupConversationToDTO(conversationAddResult);
   }
 
-  Future<Conversation> startSingleConversation(
-      String currentUserId, String targetUserId) async {
-    var checkConversation = await _conversationService
-        .getSingleConversation(currentUserId, targetUserId);
-    if (checkConversation == null) {
-      var conversation = await _conversationService.startSingleConversation(
-          currentUserId, targetUserId);
-      return _getConversationUsers(conversation, currentUserId);
-    } else
-      return _getConversationUsers(checkConversation, currentUserId);
+  Future<SingleConversationDTO> startSingleConversation(String currentUserId,String targetUserId)async{
+    var checkSingleConversation = await _conversationService.checkSingleConversation(currentUserId,targetUserId);
+    SingleConversationDTO singleConversationDTO;
+    if(checkSingleConversation != null){
+      singleConversationDTO= await _conversationModelConverter.SingleConversationToDTO(checkSingleConversation);
+    }
+    else{
+      SingleConversation conversation = new SingleConversation(members:[currentUserId,targetUserId]);
+      var singleConversation = await _conversationService.startSingleConversation(conversation);
+      singleConversationDTO= await _conversationModelConverter.SingleConversationToDTO(singleConversation);
+    }
+    return singleConversationDTO;
+  }
+  Future<String> _uploadMedia(File imgFile) async {
+    if(imgFile == null){
+      return null;
+    }
+    var url =
+          await _storageService.uploadMedia(DefaultData.MessageMedia, imgFile);
+      return url;
   }
 }
+

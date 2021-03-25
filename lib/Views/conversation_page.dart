@@ -2,15 +2,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
-import 'package:rainbow/Views/message_page.dart';
 import 'package:rainbow/common/dialogs/my_dialogs.dart';
 import 'package:rainbow/common/shared_functions.dart';
 import 'package:rainbow/core/default_data.dart';
+import 'package:rainbow/core/dto_models/conversation_dto_model.dart';
 import 'package:rainbow/core/locator.dart';
-import 'package:rainbow/core/services/navigator_service.dart';
-import 'package:rainbow/core/models/conversation.dart';
+import 'package:rainbow/core/models/message.dart';
+import 'package:rainbow/core/services/other_services/navigator_service.dart';
 import 'package:rainbow/core/viewmodels/conversation_model.dart';
 import 'package:rainbow/core/viewmodels/message_model.dart';
+import 'package:rainbow/views/message_page.dart';
 
 class ConversationPage extends StatefulWidget {
   ConversationPage({this.user});
@@ -28,28 +29,28 @@ class _ConversationPageState extends State<ConversationPage> {
       child: Center(child: getMessages()),
     );
   }
-  
+
   Widget getMessages() {
     var model = GetIt.instance<ConversationModel>();
     return ChangeNotifierProvider(
       create: (BuildContext context) => model,
-      child: StreamBuilder<List<Conversation>>(
+      child: StreamBuilder<List<ConversationDTO>>(
           stream: model.conversations(widget.user.uid),
-          builder: (context, AsyncSnapshot<List<Conversation>> snapshot) {
-            if (snapshot.hasError) {
+          builder: (context, AsyncSnapshot<List<ConversationDTO>> conversationsSnapshot) {
+            if (conversationsSnapshot.hasError) {
               showErrorDialog(context,
-                  title: "Data could not load !", message: snapshot.error);
-            } else if (snapshot.connectionState == ConnectionState.waiting) {
+                  title: "Data could not load !", message: conversationsSnapshot.error);
+            } else if (conversationsSnapshot.connectionState == ConnectionState.waiting) {
               return CircularProgressIndicator();
             }
-            return _getListView(snapshot.data);
+            return _getListView(conversationsSnapshot.data);
           }),
     );
   }
-  ListView _getListView(List<Conversation> conversations) {
+
+  ListView _getListView(List<ConversationDTO> conversations) {
     List<Widget> tiles = new List<Widget>();
     for (var conversation in conversations) {
-
       Widget tile = _getListTile(conversation);
       tiles.add(tile);
     }
@@ -58,56 +59,56 @@ class _ConversationPageState extends State<ConversationPage> {
     );
   }
 
-
-  Widget _getListTile(Conversation conversation) {
+  Widget _getListTile(ConversationDTO conversation) {
     var model = GetIt.instance<MessageModel>();
     return ChangeNotifierProvider(
       create: (BuildContext context) => model,
       child: StreamBuilder<Message>(
-          stream: model.getLastMessage(conversation.id),
+          stream: model.getLastMessage(conversation),
           builder: (context, AsyncSnapshot<Message> snapshot) {
             if (snapshot.hasError) {
-              return Container(child: Text("Error"),);
+              return Container(
+                child: Text("Error"),
+              );
             } else if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             }
-            return  _creatListTile( conversation, snapshot.data);
+            return _creatListTile(conversation, snapshot.data);
           }),
     );
-    
   }
-  ListTile _creatListTile(Conversation conversation,Message lastMessage){
+
+  ListTile _creatListTile(ConversationDTO conversation, Message lastMessage) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(conversation.profileImage != null ? conversation.profileImage: DefaultData.UserDefaultImagePath, scale: 0.1),
+        backgroundImage: NetworkImage(
+            conversation?.imgSrc== null ? DefaultData.UserDefaultImagePath :conversation.imgSrc,
+            scale: 0.1),
       ),
-      title: Text(conversation.name),
-      subtitle:  _getListTileSubtitle(lastMessage),
-      trailing: lastMessage != null ? Column(
-        children: [
-          Text(StaticFunctions.getTimeStampV1(lastMessage.timeStamp)),
-        ],
-      ):SizedBox(),
+      title: Text(conversation.visiableName),
+      subtitle: _getListTileSubtitle(lastMessage),
+      trailing: lastMessage != null
+          ? Column(
+              children: [
+                Text(StaticFunctions.getTimeStampV1(lastMessage.timeStamp)),
+              ],
+            )
+          : SizedBox(),
       onTap: () {
-        _navigatorService.navigateTo(MessagePage(
-          userId: widget.user.uid,
-          conversation: conversation,
-        ));
+        _navigatorService.navigateTo(MessagePage(conversation: conversation));
       },
     );
   }
-  Widget _getListTileSubtitle(Message lastMessage){
-    if(lastMessage == null){
-      SizedBox();
-    }
-    else{
-      if(lastMessage.isMedia){
-        return Text(DefaultData.AnImage,overflow: TextOverflow.ellipsis);
-      }
-      else{
-        return Text(lastMessage.message,overflow: TextOverflow.ellipsis);
-      }
-    }
 
+  Widget _getListTileSubtitle(Message lastMessage) {
+    if (lastMessage == null) {
+      SizedBox();
+    } else {
+      if (lastMessage.isMedia) {
+        return Text(DefaultData.AnImage, overflow: TextOverflow.ellipsis);
+      } else {
+        return Text(lastMessage.message, overflow: TextOverflow.ellipsis);
+      }
+    }
   }
 }

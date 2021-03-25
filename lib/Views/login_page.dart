@@ -8,7 +8,8 @@ import 'package:rainbow/common/dialogs/my_dialogs.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rainbow/core/locator.dart';
-import 'package:rainbow/core/services/navigator_service.dart';
+import 'package:rainbow/core/models/user.dart';
+import 'package:rainbow/core/services/other_services/navigator_service.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -223,7 +224,8 @@ class _LoginPageState extends State<LoginPage> {
 
                           User user = result.user;
                           if (user != null) {
-                                    _navigatorService.navigateTo(UserRegisterPage(user: user),isRemoveUntil: true);
+                            MyUser.CurrentUserId=user.uid;
+                            _navigatorService.navigateTo(UserRegisterPage(user: user),isRemoveUntil: true);
                           } else {
                             print("Verify code error");
                           }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:rainbow/common/widgets/widgets.dart';
 import 'package:rainbow/core/default_data.dart';
+import 'package:rainbow/core/dto_models/conversation_dto_model.dart';
 import 'package:rainbow/core/models/conversation.dart';
 import 'package:rainbow/core/models/user.dart';
 import 'package:rainbow/views/sub_pages/group_create_page.dart';
@@ -51,7 +52,7 @@ class _GroupMembersSellectState extends State<GroupMembersSellect> {
                 children: [
                   Text("Add Member"),
                   Text(
-                    selectedUserCount.toString()+" / "+Conversation.GroupMaxMember.toString(),
+                    selectedUserCount.toString()+" / "+GroupConversationDTO.MaxGroupMembers.toString(),
                     style: TextStyle(
                       fontSize: 12
                     ),
@@ -162,7 +163,7 @@ class _GroupMembersSellectState extends State<GroupMembersSellect> {
       title: Text(userSellect.user.name),
       subtitle: Text(userSellect.user.status),
       onTap: () async {
-        if(selectedUserCount < Conversation.GroupMaxMember){
+        if(selectedUserCount < GroupConversationDTO.MaxGroupMembers){
           setState(() {
             userSellect.select = !userSellect.select;
           });

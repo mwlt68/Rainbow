@@ -5,11 +5,11 @@ import 'package:rainbow/common/widgets/widgets.dart';
 import 'package:rainbow/core/default_data.dart';
 import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/models/user.dart';
-import 'package:rainbow/core/services/navigator_service.dart';
+import 'package:rainbow/core/services/other_services/navigator_service.dart';
 import 'package:rainbow/core/viewmodels/contact_model.dart';
 import 'package:rainbow/core/viewmodels/conversation_model.dart';
+import 'package:rainbow/views/message_page.dart';
 import 'package:rainbow/views/sub_pages/group_members_select_page.dart';
-import 'message_page.dart';
 
 class ContactPage extends StatelessWidget {
   final String _currentUserId;
@@ -36,6 +36,7 @@ class ContactPage extends StatelessWidget {
 
 class ContactsList extends StatelessWidget {
   final NavigatorService _navigatorService = getIt<NavigatorService>();
+  BuildContext ctx;
   Color themeAccentColor;
   String currentUserId;
   String query;
@@ -43,6 +44,7 @@ class ContactsList extends StatelessWidget {
   ContactsList(this.currentUserId,{ Key key,this.query,}) : super(key: key);
 
   Widget build(BuildContext context) {
+    ctx=context;
     themeAccentColor=Theme.of(context).accentColor;
     var model = getIt<ContactModel>();
     return FutureBuilder(
@@ -97,7 +99,8 @@ class ContactsList extends StatelessWidget {
   }
   ListTile _getListTile(MyUser myUser) {
     String name=myUser.name.toLowerCase();
-    String query2=query== null ? "":query.toLowerCase(); 
+    String query2=query== null ? "":query.toLowerCase();
+    
     if(name.contains(query2)){
       return ListTile(
       leading: CircleAvatar(
@@ -107,11 +110,15 @@ class ContactsList extends StatelessWidget {
       subtitle: Text(myUser.status),
         onTap: () async {
           var model = getIt<ConversationModel>();
-          var res =await model.startSingleConversation(currentUserId, myUser.userId);
-          _navigatorService.navigateTo(MessagePage(userId: currentUserId,conversation: res));
+          var conversation =await model.startSingleConversation(currentUserId, myUser.userId);
+          if(conversation != null){
+            Navigator.of(ctx).popUntil((route) => route.isFirst);
+            _navigatorService.navigateTo(MessagePage(conversation: conversation));
+          }
         }, 
       );
     }
+    return null;
   }
 
   Ink _getGroupConversationButton(){

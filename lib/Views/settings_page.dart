@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rainbow/common/widgets/widgets.dart';
 import 'package:rainbow/core/locator.dart';
-import 'package:rainbow/core/services/navigator_service.dart';
+import 'package:rainbow/core/services/other_services/navigator_service.dart';
 import 'package:rainbow/views/sub_pages/profile_page.dart';
 
 
