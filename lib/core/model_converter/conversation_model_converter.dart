@@ -13,7 +13,7 @@ class ConversationModelConverter {
     if (singleConversationDTO != null) {
       return new SingleConversation(
         id: singleConversationDTO.id,
-        members: singleConversationDTO.users.map<String>((e) => e.userId),
+        members: singleConversationDTO.users.map<String>((e) => e.userId).toList(),
       );
     }
     return null;
@@ -40,7 +40,7 @@ class ConversationModelConverter {
       return new GroupConversation(
         id: groupConversationDTO.id,
         name: groupConversationDTO.name,
-        members: groupConversationDTO.myUsers.map<String>((e) => e.userId),
+        members: groupConversationDTO.myUsers.map<String>((e) => e.userId).toList(),
         profileImage: groupConversationDTO.profileImage,
         createDate: groupConversationDTO.createDate,
       );

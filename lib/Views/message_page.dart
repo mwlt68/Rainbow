@@ -15,13 +15,17 @@ import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/models/message.dart';
 import 'package:rainbow/core/models/user.dart';
 import 'package:rainbow/core/services/other_services/download_service.dart';
+import 'package:rainbow/core/services/other_services/navigator_service.dart';
 import 'package:rainbow/core/viewmodels/message_model.dart';
+import 'package:rainbow/core/viewmodels/user_model.dart';
+import 'package:rainbow/views/sub_pages/group_detail.dart';
+import 'package:rainbow/views/sub_pages/user_detail_page.dart';
 import 'package:grouped_list/grouped_list.dart';
+
 
 class MessagePage extends StatefulWidget {
   final ConversationDTO conversation;
-  const MessagePage({Key key,this.conversation})
-      : super(key: key);
+  const MessagePage({this.conversation});
   @override
   _MessagePageState createState() => _MessagePageState();
 }
@@ -53,6 +57,7 @@ class MessageSellection {
 }
 
 class _MessagePageState extends State<MessagePage> {
+  final NavigatorService _navigatorService = getIt<NavigatorService>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   Color themeAccentColor, themePrimaryColor;
   bool _isLoad = false;
@@ -63,6 +68,7 @@ class _MessagePageState extends State<MessagePage> {
   final picker = ImagePicker();
   ScrollController _scrollController = new ScrollController();
   TextEditingController _textController;
+  UserModel _userModel;
   MessageModel _model;
   DownloadService _downloadService;
 
@@ -70,6 +76,7 @@ class _MessagePageState extends State<MessagePage> {
   void initState() {
     super.initState();
     _textController = new TextEditingController();
+    _userModel = getIt<UserModel>();
     _model = getIt<MessageModel>();
     _downloadService = DownloadService();
     ImageDownloader.callback(onProgressUpdate: (String imageId, int progress) {
@@ -90,8 +97,7 @@ class _MessagePageState extends State<MessagePage> {
         stream: _model.messages(widget.conversation),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            showErrorDialog(context,
-                title: "Data could not load !", message: snapshot.error);
+            return BasicErrorWidget(title: snapshot.error.toString());
           } else if (snapshot.connectionState == ConnectionState.waiting) {
             if (cachedMessageSellections != null) {
               return _getScaffold();
@@ -112,20 +118,32 @@ class _MessagePageState extends State<MessagePage> {
       key: _scaffoldKey,
       appBar: AppBar(
         titleSpacing: 0,
-        title: Row(
-          children: [
-            CircleAvatar(
-              backgroundImage:
-                  NetworkImage(widget.conversation.imgSrc ?? DefaultData.UserDefaultImagePath, scale: 0.1),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: Text(
-                widget.conversation.visiableName,
-                overflow: TextOverflow.clip,
+        title: GestureDetector(
+          onTap: (){
+            if(widget.conversation.conversationType ==ConversationType.Single){
+              String otherUserID=(widget.conversation as SingleConversationDTO).otherUser.userId;
+              print(otherUserID);
+              _navigatorService.navigateTo(UserDetailPage(userId: otherUserID,));
+            }
+            else{
+              _navigatorService.navigateTo(GroupDetailPage(widget.conversation.id));
+            }
+          },
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundImage:
+                    NetworkImage(widget.conversation.imgSrc ?? DefaultData.UserDefaultImagePath, scale: 0.1),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: Text(
+                  widget.conversation.visiableName,
+                  overflow: TextOverflow.clip,
+                ),
+              ),
+            ],
+          ),
         ),
         actions: _getScaffoldActions(),
       ),
@@ -310,8 +328,9 @@ class _MessagePageState extends State<MessagePage> {
                         : BorderRadius.only(bottomLeft: Radius.circular(25))),
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  _getOtherNameOnGroupTest(messageSellection.message),
                   _getMessageContentWidget(messageSellection.message),
                   _getMessageTime(messageSellection.message),
                 ],
@@ -335,7 +354,35 @@ class _MessagePageState extends State<MessagePage> {
       },
     );
   }
+  Widget _getOtherNameOnGroupTest(Message message)  {
+    if(widget.conversation.conversationType == ConversationType.Single || message.isCurrentUser){
+      return SizedBox(width: 1,height: 1,);
+    }
+    else {
+      Color textColor=Colors.black;
+      int index=_model.getIndexFromMessageSenderId(widget.conversation, message.senderId);
+      if(index >= 0){
+        textColor=index <= 15 ? Colors.primaries[index]:Colors.accents[index];
+          return Text(widget.conversation.users[index].name,style: TextStyle(color: textColor),);
 
+      }
+      else{
+        return StreamBuilder(
+          stream: _userModel.getMyUserFromUserId(message.senderId),
+          builder: (context,AsyncSnapshot<MyUser> snapshot) {
+          if (snapshot.hasError) {
+            return BasicErrorWidget(title: snapshot.error.toString());
+          } else if (snapshot.connectionState == ConnectionState.waiting) {
+           
+              return CircularProgressIndicator();
+            
+          }
+          return Text(snapshot.data.name,style: TextStyle(color: textColor),);
+        },
+        );
+      }
+    }
+  }
   Widget _getMessageTime(Message message) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,

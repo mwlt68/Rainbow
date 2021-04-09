@@ -12,4 +12,5 @@ class FirebaseServiceStringConstant{
   final String TimeStamp="timeStamp";
   final String UserId="userId";
   final String PhoneNumber="phoneNumber";
+  final String Name="name";
 }

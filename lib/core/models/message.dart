@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rainbow/common/aes_encryption.dart';
+import 'package:rainbow/core/models/user.dart';
 
 class Message{
   String id;
@@ -28,4 +29,6 @@ class Message{
     'usersRead': usersRead,
     'timeStamp': timeStamp,
   };
+
+  bool get isCurrentUser => senderId == MyUser.CurrentUserId ;
 }

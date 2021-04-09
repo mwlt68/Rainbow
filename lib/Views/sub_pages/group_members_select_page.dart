@@ -13,9 +13,15 @@ class MyUserSellect {
   MyUserSellect(this.user, {this.select = false});
 }
 
+enum GroupMemberSellectFor {
+  create,
+  add,
+}
+
 class GroupMembersSellect extends StatefulWidget {
   List<MyUserSellect> usersSelect;
-  GroupMembersSellect(List<MyUser> users) {
+  GroupMemberSellectFor _groupMembersSellectFor;
+  GroupMembersSellect(List<MyUser> users, this._groupMembersSellectFor) {
     this.usersSelect = new List<MyUserSellect>.empty(growable: true);
     for (var user in users) {
       usersSelect.add(new MyUserSellect(user));
@@ -29,7 +35,7 @@ class GroupMembersSellect extends StatefulWidget {
 class _GroupMembersSellectState extends State<GroupMembersSellect> {
   TextEditingController searchTEC = new TextEditingController();
   Color themeAccentColor;
-  int selectedUserCount=0;
+  int selectedUserCount = 0;
   @override
   void initState() {
     super.initState();
@@ -40,6 +46,10 @@ class _GroupMembersSellectState extends State<GroupMembersSellect> {
     themeAccentColor = Theme.of(context).accentColor;
     selectedUserCount =
         widget.usersSelect.where((element) => element.select).toList().length;
+    return _getScaffold();
+  }
+  
+  Widget _getScaffold(){
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(120.0),
@@ -52,55 +62,50 @@ class _GroupMembersSellectState extends State<GroupMembersSellect> {
                 children: [
                   Text("Add Member"),
                   Text(
-                    selectedUserCount.toString()+" / "+GroupConversationDTO.MaxGroupMembers.toString(),
-                    style: TextStyle(
-                      fontSize: 12
-                    ),
+                    selectedUserCount.toString() +
+                        " / " +
+                        GroupConversationDTO.MaxGroupMembers.toString(),
+                    style: TextStyle(fontSize: 12),
                   ),
                 ],
               ),
               actions: [
                 Visibility(
-                  visible: selectedUserCount>0,
-                  child: IconButton(
-                      icon:Icon(Icons.navigate_next_sharp,size: 40,),
-                      onPressed: ()async{
-                        await Navigator.push(context,MaterialPageRoute(builder: (content) => GroupCreate(widget.usersSelect)));
-                        setState(() {
-                          
-                        });
-                      },
-                    )
-                ),
+                    visible: selectedUserCount > 0,
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.navigate_next_sharp,
+                        size: 40,
+                      ),
+                      onPressed: _continueButton,
+                    )),
               ],
             ),
             Container(
-                margin: EdgeInsets.only(top:10),
-                padding: EdgeInsets.symmetric(horizontal: 30),
-                height: 40,
-                child: TextField(
-                  controller: searchTEC,
-                  onChanged: (val){
-                    setState(() {
-                      
-                    });
-                  },
-                  decoration: InputDecoration(
-                    fillColor: Colors.white,
-                    filled: true,
-                    labelText: 'Search',
-                    border: OutlineInputBorder(),
-                  ),
+              margin: EdgeInsets.only(top: 10),
+              padding: EdgeInsets.symmetric(horizontal: 30),
+              height: 40,
+              child: TextField(
+                controller: searchTEC,
+                onChanged: (val) {
+                  setState(() {});
+                },
+                decoration: InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
+                  labelText: 'Search',
+                  border: OutlineInputBorder(),
                 ),
-              )
+              ),
+            )
           ],
         ),
       ),
       body: Container(
         child: Column(
           children: [
-            selectedUserCount>0 ? _getSelectedUsersWidget() : Container(),
-            selectedUserCount>0
+            selectedUserCount > 0 ? _getSelectedUsersWidget() : Container(),
+            selectedUserCount > 0
                 ? Divider(
                     thickness: 3.0,
                     color: Colors.black,
@@ -114,11 +119,15 @@ class _GroupMembersSellectState extends State<GroupMembersSellect> {
   }
 
   Widget _getGroupListView() {
-    var users=widget.usersSelect.where((element) => element.user.name.toLowerCase().contains(searchTEC.text.toLowerCase())).toList();
-    if(users == null || users.length == 0){
+    var users = widget.usersSelect
+        .where((element) => element.user.name
+            .toLowerCase()
+            .contains(searchTEC.text.toLowerCase()))
+        .toList();
+    if (users == null || users.length == 0) {
       return Text("There is no user account !");
     }
-    
+
     return Expanded(
       child: GroupedListView<MyUserSellect, String>(
         elements: users,
@@ -163,7 +172,7 @@ class _GroupMembersSellectState extends State<GroupMembersSellect> {
       title: Text(userSellect.user.name),
       subtitle: Text(userSellect.user.status),
       onTap: () async {
-        if(selectedUserCount < GroupConversationDTO.MaxGroupMembers){
+        if (selectedUserCount < GroupConversationDTO.MaxGroupMembers) {
           setState(() {
             userSellect.select = !userSellect.select;
           });
@@ -175,7 +184,7 @@ class _GroupMembersSellectState extends State<GroupMembersSellect> {
   Widget _getGroupSeparator(String val) {
     return Container(
       margin: EdgeInsets.all(5),
-      padding: EdgeInsets.symmetric(vertical:5,horizontal: 20),
+      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
       decoration: BoxDecoration(
           color: Colors.lightBlue[200],
           borderRadius: BorderRadius.all(Radius.circular(20))),
@@ -187,12 +196,11 @@ class _GroupMembersSellectState extends State<GroupMembersSellect> {
     var userVisualizeWidgets = new List<Widget>.empty(growable: true);
     for (var userSelect in widget.usersSelect) {
       if (userSelect.select) {
-        var userVisualizeWidget =UserVisualize(userSelect.user,(){
+        var userVisualizeWidget = UserVisualize(userSelect.user, () {
           setState(() {
             userSelect.select = !userSelect.select;
-            });
-          }
-        );
+          });
+        });
         userVisualizeWidgets.add(userVisualizeWidget);
       }
     }
@@ -202,10 +210,24 @@ class _GroupMembersSellectState extends State<GroupMembersSellect> {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: userVisualizeWidgets,
-        ) ,
+        ),
       ),
     );
   }
 
-  
+  _continueButton() async {
+    switch (widget._groupMembersSellectFor) {
+      case GroupMemberSellectFor.create:
+        await Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (content) => GroupCreate(widget.usersSelect)));
+        setState(() {});
+        break;
+      case GroupMemberSellectFor.add:
+        print("add");
+        break;
+      default:
+    }
+  }
 }

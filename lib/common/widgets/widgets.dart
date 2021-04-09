@@ -148,7 +148,28 @@ Widget UserVisualize(MyUser user, Function function) {
     ),
   );
 }
-
+Card InfoCard(BuildContext context,IconData icon,String title,String content) {
+    return Card(
+                  margin: EdgeInsets.all(15),
+                  child: ListTile(
+                    contentPadding: EdgeInsets.all(10),
+                    leading:  Icon(
+                      icon,
+                      color: Theme.of(context).accentColor,
+                      size: 48,
+                    ),
+                    title: Text(
+                      title,
+                      style: Theme.of(context).textTheme.headline6,
+                    ),
+                    subtitle: Container(
+                      margin: EdgeInsets.only(top:5),
+                      child: Text(content,
+                      style: Theme.of(context).textTheme.subtitle1,),
+                    ),
+                  ),
+                );
+}
 Widget StackImagePicker(BuildContext context, ImageProvider imageProvider,
     Function function,
     {double circleRadius = 100,

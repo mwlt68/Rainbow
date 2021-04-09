@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rainbow/core/dto_models/conversation_dto_model.dart';
 import 'package:rainbow/core/models/conversation.dart';
 import 'package:rainbow/core/services/firebase_services/firebase_base_service.dart';
 import 'package:rainbow/core/services/services_constants/firebase_service_constant.dart';
@@ -11,6 +13,14 @@ class ConversationService extends FirebaseBaseService {
         arrayContains: userId);
     return ref.snapshots().map((event) =>
         event.docs.map((e) => SingleConversation.fromSnapshot(e)).toList());
+  }
+
+  Stream<GroupConversation> getGroupConversation(String conversationId) {
+    var ref =
+        getCollectionReferance(ConversationType.Group).doc(conversationId);
+    return ref
+        .snapshots()
+        .map((event) => GroupConversation.fromSnapshot(event));
   }
 
   Stream<List<GroupConversation>> getGroupConversations(String userId) {
@@ -28,14 +38,15 @@ class ConversationService extends FirebaseBaseService {
             arrayContains: currentUserId)
         .get()
         .then((result) {
-          for (var item in result.docs) {
-            var conversation = SingleConversation.fromSnapshot(item);
-            if (conversation != null && conversation.members.contains(targetUserId)) {
-              return conversation;
-            }
-          }
-          return null;
-        });
+      for (var item in result.docs) {
+        var conversation = SingleConversation.fromSnapshot(item);
+        if (conversation != null &&
+            conversation.members.contains(targetUserId)) {
+          return conversation;
+        }
+      }
+      return null;
+    });
   }
 
   Future<SingleConversation> startSingleConversation(
@@ -56,6 +67,18 @@ class ConversationService extends FirebaseBaseService {
     });
   }
 
+  Future<void> removeGroupConversationUserTest(String groupConversationId,String memberId) async {
+    var conversationDoc = getCollectionReferance(ConversationType.Group).doc(groupConversationId);
+    return await conversationDoc.update(
+      {FirebaseServiceStringConstant.instance.Members:FieldValue.arrayRemove([memberId])}
+      
+    );
+  }
+
+  Future<void> updateGroupConversationTest(GroupConversation conversation) async{
+    var conversationDoc = getCollectionReferance(ConversationType.Group).doc(conversation.id.toString());
+    return await conversationDoc.update(conversation.toJson());
+  }
   Future<void> _createMessageCollection(String conversationId) {
     var messageCollection = singleCollectionRef
         .doc(conversationId)

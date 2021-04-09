@@ -51,16 +51,17 @@ class ContactsList extends StatelessWidget {
         future: model.getContatcs(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return getMessages(model);
+            return getUsersWidget(model);
           } else if (snapshot.connectionState == ConnectionState.waiting) {
             return  CircularProgressIndicator();
           } else if (snapshot.hasError) {
             return Text("Contact users get error !");
-                      }
-        });
+    }
+  });
   }
 
-  Widget getMessages(ContactModel model) {
+  Widget getUsersWidget(ContactModel model) {
+    
     return ChangeNotifierProvider(
       create: (BuildContext context) => model,
       child: StreamBuilder<List<MyUser>>(
@@ -132,7 +133,7 @@ class ContactsList extends StatelessWidget {
         ),
         title: Text("Group Conversation",style: TextStyle(color: Colors.white),),
           onTap: () async {
-            _navigatorService.navigateTo(GroupMembersSellect(myUsers));
+            _navigatorService.navigateTo(GroupMembersSellect(myUsers,GroupMemberSellectFor.create));
         }, 
       ));
   }

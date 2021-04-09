@@ -25,7 +25,11 @@ class DefaultData {
   static const String MessageMedia="messageMedia";
   // Conversation Page 
   static const String AnImage="An Image";
-
+  // User Detail
+  static const String Name="Name";
+  static const String Phone="Phone";
+  // Group Detail
+  static const String GroupCreateDate="Group Create Date";
 }
 class DefaultColors{
   static const Color DarkBlue=Color.fromRGBO(52, 57, 86,1);

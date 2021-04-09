@@ -62,6 +62,18 @@ class MessageModel with ChangeNotifier{
         quality: quality,);
     return compressedFile;
   }
+
+  // If sender id in conversation users function return index else return -1
+  int getIndexFromMessageSenderId(GroupConversationDTO conversationDTO,String senderId){
+    
+    for(int i =0 ;i<conversationDTO.users.length;i++){
+      if(senderId == conversationDTO.users[i].userId){
+        return i;
+      }
+    }
+    return -1;
+  }
+
   int _calculateQualityFromFileSize(int sizeByte){
     int sizeKByte=(sizeByte/1024).round();
     int low=100,medium=500,high=4000;
