@@ -1,12 +1,11 @@
 import 'dart:io';
-
-import 'package:flutter/cupertino.dart';
 import 'package:image_downloader/image_downloader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:rainbow/core/default_data.dart';
+import 'package:rainbow/core/base/base_state.dart';
 
-class DownloadService {
+
+class DownloadService with BaseState{
   String _path;
   DownloadService() {
     _getPath();
@@ -27,7 +26,7 @@ class DownloadService {
   _getPath() async {
     String targetFolder;
     await getExternalStorageDirectory().then((dir) =>
-        targetFolder = dir.path + "/" + DefaultData.AppName.toString());
+        targetFolder = dir.path + "/" + stringConsts.appName);
     await Directory(targetFolder)
         .create(recursive: true)
         .then((dir) => _path = dir.path);

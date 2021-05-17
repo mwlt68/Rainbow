@@ -4,10 +4,10 @@ import 'package:rainbow/core/services/firebase_services/message_service.dart';
 import 'package:rainbow/core/services/other_services/navigator_service.dart';
 import 'package:rainbow/core/services/firebase_services/storage_service.dart';
 import 'package:rainbow/core/services/firebase_services/user_service.dart';
-import 'package:rainbow/core/viewmodels/contact_model.dart';
-import 'package:rainbow/core/viewmodels/conversation_model.dart';
-import 'package:rainbow/core/viewmodels/message_model.dart';
-import 'package:rainbow/core/viewmodels/user_model.dart';
+import 'package:rainbow/core/core_view_models/core_contact_view_model.dart';
+import 'package:rainbow/core/core_view_models/core_conversation_view_model.dart';
+import 'package:rainbow/core/core_view_models/core_message_view_model.dart';
+import 'package:rainbow/core/core_view_models/core_user_view_model.dart';
 
 GetIt getIt =  GetIt.instance;
 setupLocator(){
@@ -17,8 +17,8 @@ setupLocator(){
   getIt.registerLazySingleton(() => NavigatorService());
   getIt.registerLazySingleton(() => MessageService());
 
-  getIt.registerFactory(() => ConversationModel());
-  getIt.registerFactory(() => MessageModel());
-  getIt.registerFactory(() => UserModel());
-  getIt.registerFactory(() => ContactModel());
+  getIt.registerFactory(() => ConversationViewModel());
+  getIt.registerFactory(() => MessageViewModel());
+  getIt.registerFactory(() => UserViewModel());
+  getIt.registerFactory(() => ContactViewModel());
 }

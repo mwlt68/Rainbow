@@ -1,0 +1,4 @@
+enum GroupMemberSelectOption{
+  create,
+  add,
+}

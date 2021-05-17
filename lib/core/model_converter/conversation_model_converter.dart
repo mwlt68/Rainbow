@@ -1,6 +1,6 @@
 import 'package:rainbow/core/dto_models/conversation_dto_model.dart';
-import 'package:rainbow/core/models/conversation.dart';
-import 'package:rainbow/core/models/user.dart';
+import 'package:rainbow/core/core_models/core_conversation_model.dart';
+import 'package:rainbow/core/core_models/core_user_model.dart';
 import 'package:rainbow/core/services/firebase_services/user_service.dart';
 
 class ConversationModelConverter {
@@ -8,39 +8,39 @@ class ConversationModelConverter {
   UserService _userService;
   ConversationModelConverter(this._userService);
 
-  SingleConversation DTOToSingleConversation(
+  SingleConversationModel DTOToSingleConversation(
       SingleConversationDTO singleConversationDTO) {
     if (singleConversationDTO != null) {
-      return new SingleConversation(
+      return new SingleConversationModel(
         id: singleConversationDTO.id,
-        members: singleConversationDTO.users.map<String>((e) => e.userId).toList(),
+        members: singleConversationDTO.users.map<String>((e) => e.id).toList(),
       );
     }
     return null;
   }
 
   Future<SingleConversationDTO> SingleConversationToDTO(
-      SingleConversation singleConversation) async {
+      SingleConversationModel singleConversation) async {
     if (singleConversation != null) {
-      List<MyUser> myUsers =
+      List<MyUserModel> myUserModels =
           await _userService.getUsersFromIdsFuture(singleConversation.members);
-      if (myUsers != null) {
+      if (myUserModels != null) {
         return new SingleConversationDTO(
           singleConversation.id,
-          myUsers,
+          myUserModels,
         );
       }
     }
     return null;
   }
 
-  GroupConversation DTOToGroupConversation(
-      GroupConversationDTO groupConversationDTO) {
+  GroupConversationModel DTOToGroupConversation(
+      GroupConversationDTOModel groupConversationDTO) {
     if (groupConversationDTO != null) {
-      return new GroupConversation(
+      return new GroupConversationModel(
         id: groupConversationDTO.id,
         name: groupConversationDTO.name,
-        members: groupConversationDTO.myUsers.map<String>((e) => e.userId).toList(),
+        members: groupConversationDTO.myUserModels.map<String>((e) => e.id).toList(),
         profileImage: groupConversationDTO.profileImage,
         createDate: groupConversationDTO.createDate,
       );
@@ -48,17 +48,17 @@ class ConversationModelConverter {
     return null;
   }
 
-  Future<GroupConversationDTO> GroupConversationToDTO(
-      GroupConversation groupConversation) async {
+  Future<GroupConversationDTOModel> GroupConversationToDTO(
+      GroupConversationModel groupConversation) async {
     if (groupConversation != null) {
-      List<MyUser> myUsers =
+      List<MyUserModel> myUserModels =
           await _userService.getUsersFromIdsFuture(groupConversation.members);
-      if (myUsers != null) {
-        return new GroupConversationDTO(
+      if (myUserModels != null) {
+        return new GroupConversationDTOModel(
             groupConversation.id,
             name: groupConversation.name,
             profileImage: groupConversation.profileImage,
-            myUsers: myUsers,
+            myUserModels: myUserModels,
             createDate: groupConversation.createDate);
       }
     }
