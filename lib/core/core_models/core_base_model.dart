@@ -1,5 +1,6 @@
 
-class CoreBaseModel{
+
+class CoreBaseModel {
   CoreBaseModel(this.id);
   String id;
 }

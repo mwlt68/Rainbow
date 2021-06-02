@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rainbow/core/dto_models/conversation_dto_model.dart';
 import 'package:rainbow/core/core_models/core_message_model.dart';
 import 'package:rainbow/core/services/firebase_services/firebase_base_service.dart';
@@ -14,7 +15,7 @@ class MessageService extends FirebaseBaseService{
         .collection(FirebaseServiceStringConstant.instance.Messages)
         .orderBy(FirebaseServiceStringConstant.instance.TimeStamp);
     return ref.snapshots().map(
-        (event) => event.docs.map((e) => MessageModel.fromSnapshot(e)).toList());
+        (event) => event.docs.map((e) => MessageModel.fromSnapshot(conversationId,e)).toList());
   }
 
   Stream<MessageModel> getLastMessage(String conversationId, ConversationType conversationType){
@@ -29,7 +30,7 @@ class MessageService extends FirebaseBaseService{
             return null;
           }
           else{
-            return MessageModel.fromSnapshot(event.docs.last);
+            return MessageModel.fromSnapshot(conversationId,event.docs.last);
           }
         });
   }
@@ -37,11 +38,12 @@ class MessageService extends FirebaseBaseService{
   Future<void> sendMessage(MessageModel message, ConversationType conversationType,String conversationId) async {
     var ref = getCollectionReferance(conversationType).doc(conversationId).collection(FirebaseServiceStringConstant.instance.Messages);
     var messageJson=message.toJson();
-    await ref.add(messageJson);
+    ref.add(messageJson);
   }
   
   Future<void> deleteMessage(MessageModel message, ConversationType conversationType, String conversationId) async {
-    await getCollectionReferance(conversationType).doc(conversationId).collection(FirebaseServiceStringConstant.instance.Messages).doc(message.id).delete();
+    CollectionReference collectionReference= getCollectionReferance(conversationType).doc(conversationId).collection(FirebaseServiceStringConstant.instance.Messages);
+    collectionReference.doc(message.id).delete();
   }
 
 

@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:contacts_service/contacts_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:rainbow/core/services/firebase_services/user_service.dart';
@@ -7,12 +6,18 @@ import 'package:rainbow/core/core_models/core_user_model.dart';
 import 'package:rainbow/core/core_view_models/core_base_view_model.dart';
 
 class ContactViewModel extends BaseViewModel {
-  UserService _userService = new UserService();
+  UserService _userService;
   Iterable<Contact> contacts;
+
+  ContactViewModel() {
+    _userService = new UserService();
+  }
+
   Future<bool> getContatcs() async {
     contacts = await ContactsService.getContacts();
     return true;
   }
+
 
   Stream<List<MyUserModel>> getMyUserModels() {
     List<String> phoneNumbers = [];

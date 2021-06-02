@@ -3,7 +3,8 @@ part of 'message_view.dart';
 class _MessageStringValues{
 
   final String empty="";
-  final String pageBackgroudImg="https://i.pinimg.com/originals/2b/82/95/2b829561dee9e42f1e39983ab023821a.png";
+  final String pageBackgroudImgAsset="assets/images/messagebackground.png";
+  //final String pageBackgroudImg="https://i.pinimg.com/originals/2b/82/95/2b829561dee9e42f1e39983ab023821a.png";
   final String cancelText="Cancel";
   final String deleteText="Delete";
   final String deleteDialogTitle="Deletion Transaction";

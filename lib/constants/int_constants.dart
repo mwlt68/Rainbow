@@ -3,6 +3,8 @@ class IntConstants{
   static IntConstants instance= IntConstants._init();
   IntConstants._init();
 
+  final mediaSize = 250;
+  
   final coefficient=1024;
 
   final lowQualitySize=100;

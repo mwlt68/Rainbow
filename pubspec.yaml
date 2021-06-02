@@ -28,7 +28,6 @@ dependencies:
   country_code_picker: ^1.6.0
   get_it: ^5.0.1
   provider: ^4.3.2+2
-  shared_preferences: ^0.5.12+2
   circular_countdown_timer: ^0.0.7
   permission_handler: ^5.0.0
   contacts_service: ^0.3.10
@@ -41,6 +40,9 @@ dependencies:
   flutter_native_image: ^0.0.5+3
   grouped_list: ^3.7.1
   encrypt: ^4.1.0
+  path: ^1.8.0
+  cached_network_image: ^2.5.0
+  connectivity: ^2.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -55,8 +57,9 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+    - assets/images/messagebackground.png
+
   #   - images/a_dot_ham.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow/components/widgets/widgets.dart';
@@ -53,8 +54,8 @@ class _UserDetailPageState extends State<UserDetailPage>  with BaseState{
             pinned: true,
             expandedHeight: 200,
             flexibleSpace: FlexibleSpaceBar(
-                background: Image.network(
-                  user.imgSrcWithDefault,
+                background: CachedNetworkImage(
+                  imageUrl:user.imgSrcWithDefault,
                   fit: BoxFit.fill,
                 )),
           ),

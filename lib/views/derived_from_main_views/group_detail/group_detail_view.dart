@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +16,6 @@ import 'package:rainbow/views/derived_from_main_views/group_member_select/group_
 import 'package:rainbow/views/derived_from_main_views/user_detail/user_detail_view.dart';
 import 'package:rainbow/views/derived_from_main_views/group_detail/user_popupmenu.dart';
 import 'package:rainbow/core/base/base_state.dart';
-
 part 'group_detail_string_values.dart';
 
 class GroupDetailPage extends StatefulWidget {
@@ -25,7 +25,7 @@ class GroupDetailPage extends StatefulWidget {
   _GroupDetailPageState createState() => _GroupDetailPageState();
 }
 
-class _GroupDetailPageState extends State<GroupDetailPage> with BaseState{
+class _GroupDetailPageState extends State<GroupDetailPage> with BaseState {
   final NavigatorService _navigatorService = getIt<NavigatorService>();
   final _GroupDetailStringValues _values = new _GroupDetailStringValues();
   GroupDetailViewModel _viewModel;
@@ -60,7 +60,8 @@ class _GroupDetailPageState extends State<GroupDetailPage> with BaseState{
       child: StreamBuilder<GroupConversationDTOModel>(
           stream:
               _conversationModel.getGroupConversation(widget.conversationId),
-          builder: (context, AsyncSnapshot<GroupConversationDTOModel> snapshot) {
+          builder:
+              (context, AsyncSnapshot<GroupConversationDTOModel> snapshot) {
             if (snapshot.hasError) {
               return MyBasicErrorWidget(title: snapshot.error.toString());
             } else if (snapshot.connectionState == ConnectionState.waiting) {
@@ -156,9 +157,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> with BaseState{
   Widget getTile(MyUserModel user) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(
-            user?.imgSrcWithDefault,
-            scale: 0.1),
+        backgroundImage: CachedNetworkImageProvider(user?.imgSrcWithDefault, scale: 0.1),
       ),
       title: Text(user.name ?? _values.NotFound),
       subtitle: Text(user.status ?? _values.NotFound),
@@ -331,17 +330,10 @@ class _GroupDetailPageState extends State<GroupDetailPage> with BaseState{
           fit: BoxFit.fill,
         );
       } else {
-        if (_viewModel.conversationCache.profileImage == null) {
-          return Image.network(
-            stringConsts.userDefaultImagePath,
-            fit: BoxFit.fill,
-          );
-        } else {
-          return Image.network(
-            _viewModel.conversationCache.profileImage,
-            fit: BoxFit.fill,
-          );
-        }
+        return CachedNetworkImage(
+          imageUrl: _viewModel.conversationCache.imgSrc,
+          fit: BoxFit.fill,
+        );
       }
     } else {
       return Image.file(

@@ -1,4 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +14,7 @@ import 'package:rainbow/core/services/other_services/navigator_service.dart';
 import 'package:rainbow/core/core_view_models/core_conversation_view_model.dart';
 import 'package:rainbow/core/core_view_models/core_message_view_model.dart';
 import 'package:rainbow/views/derived_from_main_views/message/message_view.dart';
+import 'package:rainbow/views/main_views/conversation/conversation_view_model.dart' as cvm;
 import 'package:rainbow/core/base/base_state.dart';
 part 'conversation_string_values.dart';
 
@@ -22,26 +24,29 @@ class ConversationPage extends StatefulWidget {
   _ConversationPageState createState() => _ConversationPageState();
 }
 
-class _ConversationPageState extends State<ConversationPage>  with BaseState{
+class _ConversationPageState extends State<ConversationPage> with BaseState {
   final NavigatorService _navigatorService = getIt<NavigatorService>();
   FormatterService _formatterService = new FormatterService();
+  cvm.ConversationViewModel _viewModel;
   MyDialogs _myDialogs;
   _ConversationStringValues _values;
+
   @override
   void initState() {
     super.initState();
     _values = _ConversationStringValues();
     _myDialogs = new MyDialogs(context);
+    _viewModel= new cvm.ConversationViewModel();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Center(child: getMessages()),
+      child: Center(child: buildContainer()),
     );
   }
 
-  Widget getMessages() {
+  Widget buildContainer() {
     var model = GetIt.instance<ConversationViewModel>();
     return ChangeNotifierProvider(
       create: (BuildContext context) => model,
@@ -54,17 +59,23 @@ class _ConversationPageState extends State<ConversationPage>  with BaseState{
                   message: conversationsSnapshot.error.toString());
             } else if (conversationsSnapshot.connectionState ==
                 ConnectionState.waiting) {
-              return CircularProgressIndicator();
+                  if(_viewModel.cacheConversations != null ){
+                    return listView();
+                  }
+                  else{
+                    return CircularProgressIndicator();
+                  }
             }
-            return _getListView(conversationsSnapshot.data);
+            _viewModel.cacheConversations=conversationsSnapshot.data;
+            return listView();
           }),
     );
   }
 
-  ListView _getListView(List<ConversationDTO> conversations) {
+  ListView listView() {
     List<Widget> tiles = new List<Widget>();
-    for (var conversation in conversations) {
-      Widget tile = _getListTile(conversation);
+    for (var conversation in _viewModel.cacheConversations) {
+      Widget tile = listTile(conversation);
       tiles.add(tile);
     }
     return ListView(
@@ -72,7 +83,7 @@ class _ConversationPageState extends State<ConversationPage>  with BaseState{
     );
   }
 
-  Widget _getListTile(ConversationDTO conversation) {
+  Widget listTile(ConversationDTO conversation) {
     var model = GetIt.instance<MessageViewModel>();
     return ChangeNotifierProvider(
       create: (BuildContext context) => model,
@@ -84,19 +95,25 @@ class _ConversationPageState extends State<ConversationPage>  with BaseState{
                 child: Text(_values.Error),
               );
             } else if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              MessageModel lastMessageCache=_viewModel.getCachedMessageModel(conversation.id);
+              if(lastMessageCache != null){
+                return creatListTile(conversation, lastMessageCache);
+              }
+              else return Center(child: CircularProgressIndicator());
             }
-            return _creatListTile(conversation, snapshot.data);
+            _viewModel.addLastMessageToCache(snapshot.data);
+            return creatListTile(conversation, snapshot.data);
           }),
     );
   }
 
-  ListTile _creatListTile(ConversationDTO conversation, MessageModel lastMessage) {
+  ListTile creatListTile(
+      ConversationDTO conversation, MessageModel lastMessage) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(
-            conversation?.imgSrc,
-            scale: 0.1),
+        backgroundImage: CachedNetworkImageProvider(
+          conversation?.imgSrc,
+        ),
       ),
       title: Text(conversation.visiableName),
       subtitle: listTileSubtitle(lastMessage),
@@ -108,8 +125,9 @@ class _ConversationPageState extends State<ConversationPage>  with BaseState{
               ],
             )
           : SizedBox(),
-      onTap: () {
-        _navigatorService.navigateTo(MessagePage(conversation: conversation));
+      onTap: () async {
+        bool connectivityActive=(await Connectivity().checkConnectivity()) != ConnectivityResult.none;
+        _navigatorService.navigateTo(MessagePage(connectivityActive: connectivityActive,conversation: conversation));
       },
     );
   }
@@ -122,4 +140,6 @@ class _ConversationPageState extends State<ConversationPage>  with BaseState{
               overflow: TextOverflow.ellipsis,
             ));
   }
+
+
 }

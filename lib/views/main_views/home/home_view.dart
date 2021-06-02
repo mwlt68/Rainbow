@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -17,7 +19,6 @@ import 'package:rainbow/core/base/base_state.dart';
 part 'home_string_values.dart';
 
 class Home extends StatefulWidget {
-  
   Home();
   @override
   _HomeState createState() => _HomeState();
@@ -30,16 +31,36 @@ class _HomeState extends State<Home>
   TabController _tabController;
   bool isVisibleMessageFAB = true;
   MyDialogs _myDialogs;
+  StreamSubscription<ConnectivityResult> connectivitySubscription;
+  bool connectivityActive = false;
+
   @override
   void initState() {
     super.initState();
+
     print(MyUserModel.CurrentUserId);
+
     _myDialogs = new MyDialogs(context);
     _tabController = new TabController(length: 4, vsync: this, initialIndex: 1);
     _tabController.addListener(() {
-      isVisibleMessageFAB = _tabController.index != 0;
-      setState(() {});
+      setState(() {
+        isVisibleMessageFAB = _tabController.index != 0;
+      });
     });
+
+    connectivitySubscription = Connectivity()
+        .onConnectivityChanged
+        .listen((ConnectivityResult result) {
+      setState(() {
+        connectivityActive = result != ConnectivityResult.none;
+      });
+    });
+  }
+
+  @override
+  dispose() {
+    super.dispose();
+    connectivitySubscription.cancel();
   }
 
   @override
@@ -49,7 +70,7 @@ class _HomeState extends State<Home>
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             if (snapshot.data == PermissionStatus.granted) {
-              return getMainWidget();
+              return buildScaffold();
             } else {
               permissionShowDialog(context);
             }
@@ -77,14 +98,14 @@ class _HomeState extends State<Home>
             ));
   }
 
-  Widget getMainWidget() {
+  Widget buildScaffold() {
     return Scaffold(
         body: scaffoldBody(), floatingActionButton: floatingActionButton());
   }
 
   Visibility floatingActionButton() {
     return Visibility(
-      visible: isVisibleMessageFAB,
+      visible: isVisibleMessageFAB && connectivityActive,
       child: FloatingActionButton(
         child: Icon(
           Icons.message,

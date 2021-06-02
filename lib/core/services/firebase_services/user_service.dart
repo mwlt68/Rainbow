@@ -9,31 +9,31 @@ class UserService  extends FirebaseBaseService{
 
   Stream<MyUserModel> getUserFromUserId(String userId){
     var ref=userCollectionRef.where(FirebaseServiceStringConstant.instance.UserId,isEqualTo:userId);
-    return ref.snapshots().map((event) => MyUserModel.fromSnaphot(event.docs[0]));
+    return ref.snapshots().map((event) => MyUserModel.fromSnapshot(event.docs[0].data(),event.docs[0].id));
   }
 
   Stream<List<MyUserModel>> getUsersFromIdsStream(List<String> userIds)  {
     var ref=userCollectionRef.where(FirebaseServiceStringConstant.instance.UserId,whereIn: userIds);
-    var res= ref.snapshots().map((event) => event.docs.map((e) => MyUserModel.fromSnaphot(e)).toList());
+    var res= ref.snapshots().map((event) => event.docs.map((e) => MyUserModel.fromSnapshot(e.data(),e.id)).toList());
     return res;
   }
   Future<List<MyUserModel>> getUsersFromIdsFuture(List<String> userIds)  {
     var ref=userCollectionRef.where(FirebaseServiceStringConstant.instance.UserId,whereIn: userIds);
     var res= ref.get().then((value) => 
-      value.docs.map((e) => MyUserModel.fromSnaphot(e)).toList()
+      value.docs.map((e) => MyUserModel.fromSnapshot(e.data(),e.id)).toList()
     );
     return res;
   }
   Stream<MyUserModel> getUserFromUserPhoneNumber(String phoneNumber)  {
     var ref=userCollectionRef.where(FirebaseServiceStringConstant.instance.PhoneNumber,isEqualTo:phoneNumber);
-    var res= ref.snapshots().map((event) => MyUserModel.fromSnaphot(event.docs[0]));
+    var res= ref.snapshots().map((event) => MyUserModel.fromSnapshot(event.docs[0].data(),event.docs[0].id));
     return res;
   }
 
   Stream<List<MyUserModel>> getUserFromUserPhoneNumbers(List<String> phoneNumbers)  {
     var ref=userCollectionRef.where(FirebaseServiceStringConstant.instance.PhoneNumber,whereIn: phoneNumbers);
   //    .orderBy(FirebaseServiceStringConstant.instance.Name);
-    var res= ref.snapshots().map((event) => event.docs.map((e) => MyUserModel.fromSnaphot(e)).toList());
+    var res= ref.snapshots().map((event) => event.docs.map((e) => MyUserModel.fromSnapshot(e.data(),e.id)).toList());
     return res;
   }
 
@@ -43,7 +43,7 @@ class UserService  extends FirebaseBaseService{
 
   Future<void> updateUser(MyUserModel user) async{
     var userDoc = userCollectionRef.doc(user.snapshotId.toString());
-    return await userDoc.update(user.toJson());
+    return userDoc.update(user.toJson());
   }
 
 }

@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:clipboard/clipboard.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:image_downloader/image_downloader.dart';
@@ -13,31 +16,44 @@ import 'package:rainbow/core/locator.dart';
 import 'package:rainbow/core/core_models/core_message_model.dart';
 import 'package:rainbow/core/core_models/core_selection_model.dart';
 import 'package:rainbow/core/core_models/core_user_model.dart';
+import 'package:rainbow/core/services/other_services/download_service.dart';
 import 'package:rainbow/core/services/other_services/formatter_service.dart';
 import 'package:rainbow/core/core_view_models/core_message_view_model.dart';
 import 'package:rainbow/core/core_view_models/core_user_view_model.dart';
+import 'package:rainbow/core/services/other_services/navigator_service.dart';
+import 'package:rainbow/views/derived_from_main_views/group_detail/group_detail_view.dart';
 import 'package:rainbow/views/derived_from_main_views/message/message_view_model.dart';
 import 'package:rainbow/core/base/base_state.dart';
+import 'package:rainbow/views/derived_from_main_views/user_detail/user_detail_view.dart';
 part 'message_string_values.dart';
 
 class MessagePage extends StatefulWidget {
   final ConversationDTO conversation;
-  const MessagePage({this.conversation});
+  final bool connectivityActive;
+  MessagePage({@required this.connectivityActive,this.conversation});
   @override
   _MessagePageState createState() => _MessagePageState();
 }
 
 class _MessagePageState extends State<MessagePage> with BaseState {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final NavigatorService _navigatorService = getIt<NavigatorService>();
+  final picker = ImagePicker();
   ScrollController _scrollController = new ScrollController();
   TextEditingController _textController;
-  MessageLocalViewModel _messageViewModel;
+  MessageLocalViewModel _viewModel;
   UserViewModel _userModel;
   MessageViewModel _model;
   MyDialogs _myDialogs;
   FormatterService _formatterService = new FormatterService();
   _MessageStringValues _values = new _MessageStringValues();
-
+  StreamSubscription<ConnectivityResult> connectivitySubscription;
+  bool connectivityActive = false;
+  DownloadService downloadService= new DownloadService();
+  bool isLoad = false;
+  bool selectionIsActive = false;
+  double mediaSize=250;
+  
   @override
   void initState() {
     super.initState();
@@ -45,13 +61,28 @@ class _MessagePageState extends State<MessagePage> with BaseState {
     _userModel = getIt<UserViewModel>();
     _model = getIt<MessageViewModel>();
     _myDialogs = new MyDialogs(context);
-    _messageViewModel = new MessageLocalViewModel(widget.conversation);
+    _viewModel = new MessageLocalViewModel(widget.conversation);
     ImageDownloader.callback(onProgressUpdate: (String imageId, int progress) {
       if (progress == 100) {
         _scaffoldKey.currentState
             .showSnackBar(SnackBar(content: Text(_values.downloadCompleted)));
       }
     });
+
+    connectivityActive= widget.connectivityActive;
+        connectivitySubscription = Connectivity()
+        .onConnectivityChanged
+        .listen((ConnectivityResult result) {
+          setState(() {
+            connectivityActive = result != ConnectivityResult.none;
+          });
+    });
+  }
+
+  @override
+  dispose() {
+    super.dispose();
+    connectivitySubscription.cancel();
   }
 
   @override
@@ -64,15 +95,15 @@ class _MessagePageState extends State<MessagePage> with BaseState {
           if (snapshot.hasError) {
             return MyBasicErrorWidget(title: snapshot.error.toString());
           } else if (snapshot.connectionState == ConnectionState.waiting) {
-            if (_messageViewModel.cachedMessageSellections != null) {
+            if (_viewModel.cachedMessageSellections != null) {
               return _getScaffold();
             } else {
               return CircularProgressIndicator();
             }
           }
 
-          _messageViewModel.cachedMessageSellections =
-              _messageViewModel.getCachedMessages(snapshot.data);
+          _viewModel.cachedMessageSellections =
+              _viewModel.getCachedMessages(snapshot.data);
           return _getScaffold();
         },
       ),
@@ -97,12 +128,13 @@ class _MessagePageState extends State<MessagePage> with BaseState {
 
   GestureDetector appBarTitle() {
     return GestureDetector(
-      onTap: _messageViewModel.navigatToDetailPage,
+      onTap: _navigatToDetailPage,
       child: Row(
         children: [
           CircleAvatar(
-            backgroundImage:
-                NetworkImage(widget.conversation.imgSrc, scale: 0.1),
+            backgroundImage:CachedNetworkImageProvider(
+        widget.conversation.imgSrc,
+     ),
           ),
           Flexible(
             child: Container(
@@ -122,7 +154,7 @@ class _MessagePageState extends State<MessagePage> with BaseState {
     return Container(
       decoration: BoxDecoration(
         image: DecorationImage(
-            image: NetworkImage(_values.pageBackgroudImg), fit: BoxFit.fill),
+            image: AssetImage(_values.pageBackgroudImgAsset), fit: BoxFit.fill),
       ),
       child: Column(children: [
         Expanded(
@@ -130,10 +162,10 @@ class _MessagePageState extends State<MessagePage> with BaseState {
         ),
         Container(
           color:
-              _messageViewModel.selectionIsActive ? colorConsts.darkBlue : null,
+              selectionIsActive ? colorConsts.darkBlue : null,
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: _messageViewModel.selectionIsActive
+              children: selectionIsActive
                   ? selectModeButtons()
                   : bodyBottom()),
         ),
@@ -143,9 +175,9 @@ class _MessagePageState extends State<MessagePage> with BaseState {
 
   List<Widget> scaffoldActions() {
     return [
-      MyIconButton(Icons.phone, _messageViewModel.selectionIsActive, null),
-      MyIconButton(Icons.video_call, _messageViewModel.selectionIsActive, null),
-      MyIconButton(Icons.select_all_sharp, _messageViewModel.selectionIsActive,
+      MyIconButton(Icons.phone, selectionIsActive, null),
+      MyIconButton(Icons.video_call, selectionIsActive, null),
+      MyIconButton(Icons.select_all_sharp, selectionIsActive,
           setSelectionMode),
     ];
   }
@@ -184,12 +216,15 @@ class _MessagePageState extends State<MessagePage> with BaseState {
   Padding bottomContainerCameraIcon() {
     return Padding(
       padding: EdgeInsets.only(left: 10, right: 10),
-      child: InkWell(
-        child: IconButton(
-          onPressed: () async {
-            _myDialogs.showPicker(_getImage);
-          },
-          icon: Icon(Icons.camera_alt),
+      child: Visibility(
+        visible: connectivityActive,
+        child: InkWell(
+          child: IconButton(
+            onPressed: () async {
+              _myDialogs.showPicker(_getImage);
+            },
+            icon: Icon(Icons.camera_alt),
+          ),
         ),
       ),
     );
@@ -256,7 +291,7 @@ class _MessagePageState extends State<MessagePage> with BaseState {
     return GroupedListView<SelectionModel<MessageModel>, String>(
       controller: _scrollController,
       shrinkWrap: true,
-      elements: _messageViewModel.cachedMessageSellections,
+      elements: _viewModel.cachedMessageSellections,
       groupBy: (element) =>
           _formatterService.getDateFormatForCompare(element.model.timeStamp),
       groupComparator: (value1, value2) =>
@@ -302,14 +337,14 @@ class _MessagePageState extends State<MessagePage> with BaseState {
     return GestureDetector(
       child: listTile,
       onTap: () {
-        if (_messageViewModel.selectionIsActive) {
+        if (selectionIsActive) {
           setState(() {
             messageSellection.select = !messageSellection.select;
           });
         }
       },
       onLongPressEnd: (detail) {
-        if (!_messageViewModel.selectionIsActive) {
+        if (!selectionIsActive) {
           FocusScope.of(context).unfocus();
           messageDetailDialog(messageSellection);
         }
@@ -345,7 +380,7 @@ class _MessagePageState extends State<MessagePage> with BaseState {
   }
 
   Widget otherUserNameOnGroup(MessageModel message) {
-    bool checkOtherUserInGroupConversation=_messageViewModel.isOtherUserInGroupConv(message);
+    bool checkOtherUserInGroupConversation=_viewModel.isOtherUserInGroupConv(message);
     if (checkOtherUserInGroupConversation) {
       int index = _model.getIndexFromMessageSenderId(
           widget.conversation, message.senderId);
@@ -401,9 +436,12 @@ class _MessagePageState extends State<MessagePage> with BaseState {
   // This method check received message is text or image.
   Widget messageContentWidget(MessageModel message) {
     if (message.isMedia) {
-      return Image.network(message.message,
-          width: _messageViewModel.mediaSize,
-          height: _messageViewModel.mediaSize);
+      return 
+      CachedNetworkImage(
+        imageUrl: message.message,
+        width: mediaSize,
+        height: mediaSize,
+     );
     } else {
       return Container(
         padding: EdgeInsets.all(10),
@@ -483,7 +521,7 @@ class _MessagePageState extends State<MessagePage> with BaseState {
   _getImage(ImageSource imgSource, PickerMode pickerMode) async {
     if (pickerMode != PickerMode.None) {
       final pickedFile =
-          await _messageViewModel.picker.getImage(source: imgSource);
+          await picker.getImage(source: imgSource);
       if (pickedFile != null) {
         var _image = File(pickedFile.path);
         await _model.sendMessage(
@@ -504,17 +542,17 @@ class _MessagePageState extends State<MessagePage> with BaseState {
 
   void _selectionModeCancelClick() {
     setState(() {
-      _messageViewModel.cachedMessageSellections.setAllSelection(false);
-      _messageViewModel.selectionIsActive = false;
+      _viewModel.cachedMessageSellections.setAllSelection(false);
+      selectionIsActive = false;
     });
   }
 
   Future<void> _deleteMessages() async {
     List<MessageModel> selectedMessages =
-        _messageViewModel.cachedMessageSellections.selectedModels;
+        _viewModel.cachedMessageSellections.selectedModels;
     await _model.deleteMessages(selectedMessages, widget.conversation);
     setState(() {
-      _messageViewModel.selectionIsActive = false;
+      selectionIsActive = false;
     });
   }
 
@@ -523,7 +561,7 @@ class _MessagePageState extends State<MessagePage> with BaseState {
     try {
       // && !messageSellection.isDownload
       if (messageSellection.model.isMedia) {
-        _messageViewModel.downloadService
+        downloadService
             .downloadImages(messageSellection.model.message);
         Navigator.pop(context);
       }
@@ -551,24 +589,39 @@ class _MessagePageState extends State<MessagePage> with BaseState {
   }
 
   void _setListViewScrollment() {
-    if (!_messageViewModel.isLoad) {
+    if (!isLoad) {
       Timer(
         Duration(milliseconds: 300),
         () => _scrollController
             .jumpTo(_scrollController.position.maxScrollExtent),
       );
-      _messageViewModel.isLoad = true;
+      isLoad = true;
     }
   }
 
   setSelectionMode() {
-    if (!_messageViewModel.selectionIsActive) {
+    if (!selectionIsActive) {
       setState(() {
-        _messageViewModel.selectionIsActive = true;
+        selectionIsActive = true;
       });
     }
   }
 
+  void _navigatToDetailPage(){
+    if (_viewModel.conversation.conversationType ==
+                ConversationType.Single) {
+              String otherUserID =
+                  (_viewModel.conversation as SingleConversationDTO)
+                      .otherUser
+                      .id;
+              _navigatorService.navigateTo(UserDetailPage(
+                userId: otherUserID,
+              ));
+            } else {
+              _navigatorService
+                  .navigateTo(GroupDetailPage(_viewModel.conversation.id));
+            }
+  }
   _colorFromIndex(int index) {
     Color color = Colors.black;
     if (index >= 0) {

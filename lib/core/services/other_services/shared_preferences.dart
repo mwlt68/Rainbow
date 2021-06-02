@@ -1,3 +1,4 @@
+/*
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPref {
@@ -13,4 +14,4 @@ class SharedPref {
     final prefs = await SharedPreferences.getInstance();
     prefs.remove(key);
   }
-}
+}*/

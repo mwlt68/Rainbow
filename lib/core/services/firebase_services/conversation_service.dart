@@ -84,6 +84,7 @@ class ConversationService extends FirebaseBaseService {
     var conversationDoc = getCollectionReferance(ConversationType.Group).doc(conversation.id.toString());
     return await conversationDoc.update(conversation.toJson());
   }
+  
   Future<void> _createMessageCollection(String conversationId) {
     var messageCollection = singleCollectionRef
         .doc(conversationId)

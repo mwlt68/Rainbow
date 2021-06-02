@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,17 +15,17 @@ import 'package:rainbow/core/base/base_state.dart';
 part 'profile_string_values.dart';
 
 class ProfilePage extends StatefulWidget {
-
-  ProfilePage();
+  bool connectivityActive;
+  ProfilePage(this.connectivityActive);
   @override
   _ProfilePageState createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage>  with BaseState{
   final _ProfileStringValues _values= new _ProfileStringValues();
+  final _picker = ImagePicker();
   MyUserModel _myUserModel;
   UserViewModel _model;
-  final _picker = ImagePicker();
   File _selectedImage;
   bool _didChange = false;
   bool _didLoadUser = false;
@@ -33,24 +35,41 @@ class _ProfilePageState extends State<ProfilePage>  with BaseState{
   String _statusText;
   MyDialogs _myDialogs;
   ContextfullWidgets  _contextfullWidgets;
+  StreamSubscription<ConnectivityResult> connectivitySubscription;
+  bool connectivityActive; 
+  
   @override
   void initState() {
     super.initState();
     _myDialogs=new MyDialogs(context);
     _contextfullWidgets= new ContextfullWidgets(context);
     _model = getIt<UserViewModel>();
+    connectivityActive= widget.connectivityActive;
+    connectivitySubscription = Connectivity()
+    .onConnectivityChanged
+    .listen((ConnectivityResult result) {
+      setState(() {
+        connectivityActive = result != ConnectivityResult.none;
+        });
+      });
+  }
+
+  @override
+  dispose() {
+    super.dispose();
+    connectivitySubscription.cancel();
   }
 
   @override
   Widget build(BuildContext context) {
     if (_didLoadUser) {
-      return _getScaffold();
+      return buildScaffold();
     }
     return ChangeNotifierProvider(
       create: (context) => _model,
       child: StreamBuilder<MyUserModel>(
         stream: _model.getMyUserModelFromUserId(MyUserModel.CurrentUserId),
-        builder: (context, snapshot) {
+        builder: (context,AsyncSnapshot<MyUserModel> snapshot) {
           if (snapshot.hasError) {
             _myDialogs.showErrorDialog(
                 _values.DataLoadError, message: snapshot.error);
@@ -61,14 +80,14 @@ class _ProfilePageState extends State<ProfilePage>  with BaseState{
           _didLoadUser = true;
           _statusText = snapshot.data.status;
           _nameTEC = new TextEditingController(text: snapshot.data.name);
-          _profileImageSrc = snapshot.data.imgSrc;
-          return _getScaffold();
+          _profileImageSrc = snapshot.data.imgSrcWithDefault;
+          return buildScaffold();
         },
       ),
     );
   }
 
-  Widget _getScaffold() {
+  Widget buildScaffold() {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: appBar(),
@@ -120,9 +139,11 @@ class _ProfilePageState extends State<ProfilePage>  with BaseState{
   }
 
   Widget imagePickerContainer(){
+    
     return _contextfullWidgets.StackImagePicker(
-            _getBackgroundImage(),
-            _getImage
+            backgroundImage(),
+            _getImage,
+            isButtonActive: connectivityActive,
           );
   }
   GestureDetector statusWidgetNavigatorContainer() {
@@ -229,19 +250,14 @@ class _ProfilePageState extends State<ProfilePage>  with BaseState{
     }
   }
 
-  ImageProvider  _getBackgroundImage(){
+  ImageProvider  backgroundImage(){
 
     if(_selectedImage == null){
       if(_removeUserImg){
         return NetworkImage(stringConsts.userDefaultImagePath);
       }
       else{
-        if(_profileImageSrc == null){
-          return NetworkImage(stringConsts.userDefaultImagePath);
-        }
-        else{
-          return NetworkImage(_profileImageSrc);
-        }
+        return CachedNetworkImageProvider(_profileImageSrc);
       }
     }
     else{

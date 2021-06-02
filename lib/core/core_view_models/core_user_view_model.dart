@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rainbow/core/locator.dart';
@@ -59,8 +58,8 @@ class UserViewModel extends BaseViewModel with BaseState{
     else{
       user.name=name;
       user.status=status;
-      await _userService.updateUser(user);
-      if(oldImageUrl != null && !oldImageUrl.isEmpty){
+      _userService.updateUser(user);
+      if(oldImageUrl != null && oldImageUrl != ""){
         await _storageService.deleteMedia(oldImageUrl);
         return null;
       }

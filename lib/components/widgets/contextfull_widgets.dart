@@ -15,7 +15,7 @@ class ContextfullWidgets {
       ImageProvider imageProvider, Function function,
       {double circleRadius = 100,
       double verticalPadding = 20,
-      removeIsVisiable = true}) {
+      removeIsVisiable = true,isButtonActive=true}) {
         
     MyDialogs _myDialogs = new MyDialogs(_context);
     return Container(
@@ -29,16 +29,19 @@ class ContextfullWidgets {
           Positioned(
               bottom: 0,
               right: 0,
-              child: FloatingActionButton(
-                child: Icon(
-                  Icons.camera_alt,
-                  color: Colors.white,
+              child: Visibility(
+                visible: isButtonActive,
+                child: FloatingActionButton(
+                  child: Icon(
+                    Icons.camera_alt,
+                    color: Colors.white,
+                  ),
+                  onPressed: () {
+                    _myDialogs.showPicker(function,
+                        removeIsVisiable: removeIsVisiable);
+                  },
+                  backgroundColor:ColorConstants.instance.primaryColor,
                 ),
-                onPressed: () {
-                  _myDialogs.showPicker(function,
-                      removeIsVisiable: removeIsVisiable);
-                },
-                backgroundColor:ColorConstants.instance.primaryColor,
               ))
         ],
       ),

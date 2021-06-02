@@ -5,16 +5,18 @@ import 'package:rainbow/core/core_models/core_user_model.dart';
 
 class MessageModel extends CoreBaseModel{
 
+  String conversationId;
   String message;
   String senderId;
   Timestamp timeStamp;
   bool isMedia;
   List<String> usersRead;
   
-  MessageModel({String id,this.message,this.senderId,this.timeStamp,this.isMedia,this.usersRead}):super(id);
+  MessageModel({String conversationId,String id,this.message,this.senderId,this.timeStamp,this.isMedia,this.usersRead}):super(id);
 
-  factory MessageModel.fromSnapshot(DocumentSnapshot snapshot){
+  factory MessageModel.fromSnapshot(String conversationId,DocumentSnapshot snapshot){
     return MessageModel(
+      conversationId: conversationId,
       id:snapshot.id,
       message: AESEncryption.getDecryptedMessage(snapshot.data()['message']) ,
       senderId: snapshot.data()['senderId'],

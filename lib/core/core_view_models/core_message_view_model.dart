@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
@@ -28,7 +27,7 @@ class MessageViewModel with ChangeNotifier , BaseState{
       return;
     }else{
       for (var message in messages) {
-        await _messageService.deleteMessage(message, conversationDTO.conversationType,conversationDTO.id);
+         _messageService.deleteMessage(message, conversationDTO.conversationType,conversationDTO.id);
       }
     }
     
@@ -53,7 +52,7 @@ class MessageViewModel with ChangeNotifier , BaseState{
     }
     else{
       message.message= messageParam;
-      await _messageService.sendMessage(message, conversationDTO.conversationType,conversationDTO.id);
+      _messageService.sendMessage(message, conversationDTO.conversationType,conversationDTO.id);
     }
   }
   Future<File> _compressFile(File file) async{

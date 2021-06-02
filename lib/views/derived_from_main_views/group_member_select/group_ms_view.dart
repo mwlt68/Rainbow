@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +13,6 @@ import 'package:rainbow/views/derived_from_main_views/group_member_select/group_
 import 'package:rainbow/core/base/base_state.dart';
 part 'group_ms_string_values.dart';
 
-
 class GroupMembersSelect extends StatefulWidget {
   List<String> constSellectedUsers;
   ContactViewModel contactModel;
@@ -24,7 +24,8 @@ class GroupMembersSelect extends StatefulWidget {
   _GroupMembersSelectState createState() => _GroupMembersSelectState();
 }
 
-class _GroupMembersSelectState extends State<GroupMembersSelect>  with BaseState{
+class _GroupMembersSelectState extends State<GroupMembersSelect>
+    with BaseState {
   TextEditingController searchTEC = new TextEditingController();
   GroupMemberSelectViewModel _viewModel;
   _GroupMemberSelectStringValues _values;
@@ -112,63 +113,60 @@ class _GroupMembersSelectState extends State<GroupMembersSelect>  with BaseState
     return PreferredSize(
       preferredSize: Size.fromHeight(120.0),
       child: Column(
-        children: [
-          appBar(),
-          searchFieldContainer()
-        ],
+        children: [appBar(), searchFieldContainer()],
       ),
     );
   }
 
   Container searchFieldContainer() {
     return Container(
-          margin: EdgeInsets.only(top: 10),
-          padding: EdgeInsets.symmetric(horizontal: 30),
-          height: 40,
-          child: TextField(
-            controller: searchTEC,
-            onChanged: (val) {
-              setState(() {});
-            },
-            decoration: InputDecoration(
-              fillColor: Colors.white,
-              filled: true,
-              labelText: _values.search,
-              border: OutlineInputBorder(),
-            ),
-          ),
-        );
+      margin: EdgeInsets.only(top: 10),
+      padding: EdgeInsets.symmetric(horizontal: 30),
+      height: 40,
+      child: TextField(
+        controller: searchTEC,
+        onChanged: (val) {
+          setState(() {});
+        },
+        decoration: InputDecoration(
+          fillColor: Colors.white,
+          filled: true,
+          labelText: _values.search,
+          border: OutlineInputBorder(),
+        ),
+      ),
+    );
   }
 
   AppBar appBar() {
     return AppBar(
-          centerTitle: true,
-          title: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(_values.addMember),
-              Text(
-                _viewModel.selectedCountText(),
-                style: TextStyle(fontSize: 12),
-              ),
-            ],
+      centerTitle: true,
+      title: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(_values.addMember),
+          Text(
+            _viewModel.selectedCountText(),
+            style: TextStyle(fontSize: 12),
           ),
-          actions: [
-            appBarContinueAction(),
-          ],
-        );
+        ],
+      ),
+      actions: [
+        appBarContinueAction(),
+      ],
+    );
   }
 
   Visibility appBarContinueAction() {
     return Visibility(
-                visible: _viewModel.cachedUserSellections.selectedModelCount > 0,
-                child: IconButton(
-                  icon: Icon(
-                    Icons.navigate_next_sharp,
-                    size: 40,
-                  ),
-                  onPressed: _continueButton,
-                ));
+        visible: _viewModel.cachedUserSellections.selectedModelCount > 0,
+        child: IconButton(
+          icon: Icon(
+            Icons.navigate_next_sharp,
+            size: 40,
+          ),
+          onPressed: _continueButton,
+        ));
   }
 
   Widget getGroupListView() {
@@ -177,15 +175,15 @@ class _GroupMembersSelectState extends State<GroupMembersSelect>  with BaseState
 
     if (users == null || users.length == 0) {
       return Text(_values.matchingUserNotFound);
-    }
-    else {
+    } else {
       return Expanded(
         child: groupedListView(users),
       );
     }
   }
 
-  GroupedListView<SelectionModel<MyUserModel>, String> groupedListView(List<SelectionModel<MyUserModel>> users) {
+  GroupedListView<SelectionModel<MyUserModel>, String> groupedListView(
+      List<SelectionModel<MyUserModel>> users) {
     return GroupedListView<SelectionModel<MyUserModel>, String>(
       elements: users,
       groupBy: _viewModel.MyUserModelSellectGroupBy,
@@ -203,11 +201,12 @@ class _GroupMembersSelectState extends State<GroupMembersSelect>  with BaseState
     );
   }
 
-
   ListTile listViewListTile(SelectionModel<MyUserModel> userSellect) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(userSellect.model.imgSrcWithDefault),
+        backgroundImage: CachedNetworkImageProvider(
+          userSellect.model.imgSrcWithDefault,
+        ),
       ),
       trailing: userSellect.select
           ? Icon(
@@ -269,11 +268,13 @@ class _GroupMembersSelectState extends State<GroupMembersSelect>  with BaseState
         await Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (content) => GroupCreate(_viewModel.cachedUserSellections)));
+                builder: (content) =>
+                    GroupCreate(_viewModel.cachedUserSellections)));
         setState(() {});
         break;
       case GroupMemberSelectOption.add:
-        Navigator.pop(context, _viewModel.cachedUserSellections.selectedModelsId);
+        Navigator.pop(
+            context, _viewModel.cachedUserSellections.selectedModelsId);
         break;
       default:
     }

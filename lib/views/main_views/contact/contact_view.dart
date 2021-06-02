@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rainbow/components/dialogs/my_dialogs.dart';
@@ -14,11 +15,12 @@ import 'package:rainbow/core/base/base_state.dart';
 part 'contact_string_values.dart';
 
 class ContactPage extends StatelessWidget {
-  final _ContactStringValues _values= new _ContactStringValues();
+  final _ContactStringValues _values = new _ContactStringValues();
   ContactPage();
   @override
   Widget build(BuildContext context) {
-    var contactListWidget=ContactsList(MyUserModel.CurrentUserId,query: _values.empty);
+    var contactListWidget =
+        ContactsList(MyUserModel.CurrentUserId, query: _values.empty);
     return Scaffold(
       appBar: appBar(context, contactListWidget),
       body: Center(child: contactListWidget),
@@ -35,47 +37,50 @@ class ContactPage extends StatelessWidget {
     );
   }
 
-  IconButton searchDelegeteIconButton(BuildContext context, ContactsList contactListWidget) {
+  IconButton searchDelegeteIconButton(
+      BuildContext context, ContactsList contactListWidget) {
     return IconButton(
-          icon: Icon(Icons.search),
-          onPressed: () {
-            showSearch(context: context, delegate: ContactSearchDelegate(contactListWidget));
-          });
+        icon: Icon(Icons.search),
+        onPressed: () {
+          showSearch(
+              context: context,
+              delegate: ContactSearchDelegate(contactListWidget));
+        });
   }
-
-  
 }
 
-class ContactsList extends StatelessWidget  with BaseState{
-  final _ContactStringValues _values= new _ContactStringValues();
+class ContactsList extends StatelessWidget with BaseState {
+  final _ContactStringValues _values = new _ContactStringValues();
   final NavigatorService _navigatorService = getIt<NavigatorService>();
   BuildContext ctx;
   String currentUserId;
   ContactViewModel _contactViewModel;
   String query;
   List<MyUserModel> myUserModels;
-  ContactsList(this.currentUserId,{ Key key,this.query,}) : super(key: key);
+  ContactsList(
+    this.currentUserId, {
+    Key key,
+    this.query,
+  }) : super(key: key);
   MyDialogs _myDialogs;
 
-
   Widget build(BuildContext context) {
-    ctx=context;
-    _myDialogs= new MyDialogs(context);
+    ctx = context;
+    _myDialogs = new MyDialogs(context);
     var model = getIt<ContactViewModel>();
     return FutureBuilder(
         future: model.getContatcs(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            _contactViewModel=model;
+            _contactViewModel = model;
             return getUsersWidget();
           } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return  CircularProgressIndicator();
+            return CircularProgressIndicator();
           } else if (snapshot.hasError) {
             return Text(_values.UserGetError);
-    }
-  });
+          }
+        });
   }
-
 
   Widget getUsersWidget() {
     return ChangeNotifierProvider(
@@ -84,77 +89,90 @@ class ContactsList extends StatelessWidget  with BaseState{
           stream: _contactViewModel.getMyUserModels(),
           builder: (context, AsyncSnapshot<List<MyUserModel>> snapshot) {
             if (snapshot.hasError) {
-              _myDialogs.showErrorDialog(
-                  _values.DataLoadError, message: snapshot.error);
+              _myDialogs.showErrorDialog(_values.DataLoadError,
+                  message: snapshot.error);
             } else if (snapshot.connectionState == ConnectionState.waiting) {
               return CircularProgressIndicator();
             }
-            var ownUser=snapshot.data.where((element) => element.id== this.currentUserId);
-            if(ownUser.isNotEmpty){
+            var ownUser = snapshot.data
+                .where((element) => element.id == this.currentUserId);
+            if (ownUser.isNotEmpty) {
               snapshot.data.remove(ownUser.first);
             }
-            myUserModels=snapshot.data;
-            myUserModels.sort((a,b)=> a.name.toString().compareTo(b.name.toString()));
+            myUserModels = snapshot.data;
+            myUserModels
+                .sort((a, b) => a.name.toString().compareTo(b.name.toString()));
             return Center(child: getListView());
           }),
     );
   }
 
-  ListView getListView(){
-    List<Widget> tiles= new List<Widget>();
-    var groupTile=_getGroupConversationButton();
+  ListView getListView() {
+    List<Widget> tiles = new List<Widget>();
+    var groupTile = _getGroupConversationButton();
     tiles.add(groupTile);
     for (var myUserModel in myUserModels) {
       var tile = _getListTile(myUserModel);
-      if(tile != null){
+      if (tile != null) {
         tiles.add(tile);
       }
     }
     return ListView(
-      children: tiles.length == 0 ? [ MyPureText(_values.ElementNotFound)] : tiles,
+      children:
+          tiles.length == 0 ? [MyPureText(_values.ElementNotFound)] : tiles,
     );
   }
 
-
   ListTile _getListTile(MyUserModel myUserModel) {
-    String name=myUserModel.name.toLowerCase();
-    String query2=query== null ? _values.empty:query.toLowerCase();
-    
-    if(name.contains(query2)){
+    String name = myUserModel.name.toLowerCase();
+    String query2 = query == null ? _values.empty : query.toLowerCase();
+
+    if (name.contains(query2)) {
       return ListTile(
-      leading: CircleAvatar(
-        backgroundImage: NetworkImage(myUserModel.imgSrcWithDefault),
-      ),
-      title: Text(myUserModel.name),
-      subtitle: Text(myUserModel.status),
+        leading: CircleAvatar(
+          backgroundImage: CachedNetworkImageProvider(
+            myUserModel.imgSrcWithDefault,
+          ),
+        ),
+        title: Text(myUserModel.name),
+        subtitle: Text(myUserModel.status),
         onTap: () async {
           var model = getIt<ConversationViewModel>();
-          var conversation =await model.startSingleConversation(currentUserId, myUserModel.id);
-          if(conversation != null){
+          var conversation = await model.startSingleConversation(
+              currentUserId, myUserModel.id);
+          if (conversation != null) {
             Navigator.of(ctx).popUntil((route) => route.isFirst);
-            _navigatorService.navigateTo(MessagePage(conversation: conversation));
+            _navigatorService
+                .navigateTo(MessagePage(conversation: conversation));
           }
-        }, 
+        },
       );
     }
     return null;
   }
 
-  Ink _getGroupConversationButton(){
+  Ink _getGroupConversationButton() {
     return Ink(
-      color: colorConsts.accentColor,
-      child:ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.white,
-          child: Icon(Icons.group,color: Colors.black,),
-        ),
-        title: Text(_values.GroupConversation,style: TextStyle(color: Colors.white),),
+        color: colorConsts.accentColor,
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: Colors.white,
+            child: Icon(
+              Icons.group,
+              color: Colors.black,
+            ),
+          ),
+          title: Text(
+            _values.GroupConversation,
+            style: TextStyle(color: Colors.white),
+          ),
           onTap: () async {
-            _navigatorService.navigateTo(GroupMembersSelect(GroupMemberSelectOption.create,contactModel: _contactViewModel));
-        }, 
-      ));
+            _navigatorService.navigateTo(GroupMembersSelect(
+                GroupMemberSelectOption.create,
+                contactModel: _contactViewModel));
+          },
+        ));
   }
-
 }
 
 class ContactSearchDelegate extends SearchDelegate {
@@ -169,7 +187,6 @@ class ContactSearchDelegate extends SearchDelegate {
   @override
   List<Widget> buildActions(BuildContext context) {
     return [];
-
   }
 
   @override
@@ -184,13 +201,13 @@ class ContactSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildResults(BuildContext context) {
-    contactsList.query=query;
+    contactsList.query = query;
     return contactsList.getListView();
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    contactsList.query=query;
+    contactsList.query = query;
     return contactsList.getListView();
   }
 }
