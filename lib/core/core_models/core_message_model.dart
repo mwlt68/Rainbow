@@ -9,10 +9,11 @@ class MessageModel extends CoreBaseModel{
   String message;
   String senderId;
   Timestamp timeStamp;
+  Timestamp serverTimeStamp;
   bool isMedia;
   List<String> usersRead;
   
-  MessageModel({String conversationId,String id,this.message,this.senderId,this.timeStamp,this.isMedia,this.usersRead}):super(id);
+  MessageModel({String conversationId,String id,this.message,this.senderId,this.serverTimeStamp,this.timeStamp,this.isMedia,this.usersRead}):super(id);
 
   factory MessageModel.fromSnapshot(String conversationId,DocumentSnapshot snapshot){
     return MessageModel(
@@ -21,6 +22,7 @@ class MessageModel extends CoreBaseModel{
       message: AESEncryption.getDecryptedMessage(snapshot.data()['message']) ,
       senderId: snapshot.data()['senderId'],
       timeStamp: snapshot.data()['timeStamp'],
+      serverTimeStamp: snapshot.data()['serverTimeStamp'],
       isMedia: snapshot.data()['isMedia'],
       usersRead: List.from(snapshot.data()['usersRead']),
     );
@@ -33,7 +35,10 @@ class MessageModel extends CoreBaseModel{
     'isMedia': isMedia,
     'usersRead': usersRead,
     'timeStamp': timeStamp,
+    'serverTimeStamp': FieldValue.serverTimestamp(),
   };
+
+  Timestamp get getPosibleTimeStamp=> senderId ==  MyUserModel.CurrentUserId ? timeStamp:serverTimeStamp;
 
   bool get isCurrentUser => senderId == MyUserModel.CurrentUserId ;
 }

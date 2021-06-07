@@ -10,6 +10,7 @@ class FirebaseServiceStringConstant{
   final String IsGroup="isGroup";
   final String Messages="messages";
   final String TimeStamp="timeStamp";
+  final String ServerTimeStamp="serverTimeStamp";
   final String UserId="userId";
   final String PhoneNumber="phoneNumber";
   final String Name="name";

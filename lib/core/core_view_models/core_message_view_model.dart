@@ -36,8 +36,8 @@ class MessageViewModel with ChangeNotifier , BaseState{
     MessageModel message = new MessageModel(
       senderId: senderId,
       isMedia: isMedia,
+      timeStamp: Timestamp.fromDate(DateTime.now()),
       usersRead: [],
-      timeStamp:Timestamp.fromDate(DateTime.now()),
     );
     if(isMedia){
       if(file != null){
@@ -55,6 +55,7 @@ class MessageViewModel with ChangeNotifier , BaseState{
       _messageService.sendMessage(message, conversationDTO.conversationType,conversationDTO.id);
     }
   }
+
   Future<File> _compressFile(File file) async{
     var fileSize=await file.length();
     int quality = _calculateQualityFromFileSize(fileSize);

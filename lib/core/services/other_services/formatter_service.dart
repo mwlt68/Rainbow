@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:rainbow/core/core_models/core_message_model.dart';
 
 class FormatterService{
 
@@ -30,7 +31,8 @@ class FormatterService{
   
   String getDateFormatForCompare(Timestamp timestamp){
     DateFormat formatter = DateFormat('yyyy-MM-dd');
-    return formatter.format(timestamp.toDate());
+    var date=timestamp.toDate();
+    return formatter.format(date);
   }
 
 

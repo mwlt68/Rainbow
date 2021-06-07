@@ -13,7 +13,7 @@ class MessageService extends FirebaseBaseService{
     var ref = collectionRef
         .doc(conversationId)
         .collection(FirebaseServiceStringConstant.instance.Messages)
-        .orderBy(FirebaseServiceStringConstant.instance.TimeStamp);
+        .orderBy(FirebaseServiceStringConstant.instance.ServerTimeStamp);
     return ref.snapshots().map(
         (event) => event.docs.map((e) => MessageModel.fromSnapshot(conversationId,e)).toList());
   }
@@ -23,7 +23,7 @@ class MessageService extends FirebaseBaseService{
       var ref = collectionRef
         .doc(conversationId)
         .collection(FirebaseServiceStringConstant.instance.Messages)
-        .orderBy(FirebaseServiceStringConstant.instance.TimeStamp);
+        .orderBy(FirebaseServiceStringConstant.instance.ServerTimeStamp);
       return ref.snapshots().map(
         (event){
           if(event.docs == null || event.docs.length==0){

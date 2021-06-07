@@ -121,7 +121,7 @@ class _ConversationPageState extends State<ConversationPage> with BaseState {
           ? Column(
               children: [
                 Text(_formatterService
-                    .getDateTimeCompareToday_ddMMyyyy(lastMessage.timeStamp)),
+                    .getDateTimeCompareToday_ddMMyyyy(lastMessage.getPosibleTimeStamp)),
               ],
             )
           : SizedBox(),

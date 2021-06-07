@@ -283,6 +283,7 @@ class _MessagePageState extends State<MessagePage> with BaseState {
   // ListView contain a lot of gestures.
   Widget groupedListViewWithScrollment() {
     GroupedListView groupedListView = groupListView();
+    
     _setListViewScrollment();
     return groupedListView;
   }
@@ -292,8 +293,9 @@ class _MessagePageState extends State<MessagePage> with BaseState {
       controller: _scrollController,
       shrinkWrap: true,
       elements: _viewModel.cachedMessageSellections,
-      groupBy: (element) =>
-          _formatterService.getDateFormatForCompare(element.model.timeStamp),
+      groupBy: (element) {
+        return  _formatterService.getDateFormatForCompare(element.model.getPosibleTimeStamp);
+      },
       groupComparator: (value1, value2) =>
           DateTime.parse(value1).compareTo(DateTime.parse(value2)),
       groupSeparatorBuilder: (String groupByValue) =>
@@ -422,7 +424,7 @@ class _MessagePageState extends State<MessagePage> with BaseState {
         Container(
           padding: EdgeInsets.only(top: 10, right: 10),
           child: Text(
-            _formatterService.getDateTime_Hm(message.timeStamp),
+            _formatterService.getDateTime_Hm(message.getPosibleTimeStamp),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w300,
@@ -474,7 +476,7 @@ class _MessagePageState extends State<MessagePage> with BaseState {
   List<Widget> messageDetailDialogChildrens(
       SelectionModel<MessageModel> messageSellection) {
     return [
-      MyNullable(messageSellection.model.timeStamp, () {
+      MyNullable(messageSellection.model.getPosibleTimeStamp, () {
         return messageDialogTimeContainer(messageSellection);
       }),
       MyDivider,
@@ -504,11 +506,11 @@ class _MessagePageState extends State<MessagePage> with BaseState {
         children: [
           MyRoundText(
               _formatterService
-                  .getDateTime_Hm(messageSellection.model.timeStamp),
+                  .getDateTime_Hm(messageSellection.model.getPosibleTimeStamp),
               Colors.blue),
           MyRoundText(
               _formatterService
-                  .getDateTime_ddMMyyyy(messageSellection.model.timeStamp),
+                  .getDateTime_ddMMyyyy(messageSellection.model.getPosibleTimeStamp),
               Colors.blue),
         ],
       ),
@@ -533,11 +535,14 @@ class _MessagePageState extends State<MessagePage> with BaseState {
   }
 
   Future<void> messageSendClick() async {
+
     await _model.sendMessage(
         false, MyUserModel.CurrentUserId, widget.conversation,
         messageParam: _textController.text);
+
     _textController.text = _values.empty;
     _scroolAnimateToEnd();
+
   }
 
   void _selectionModeCancelClick() {
