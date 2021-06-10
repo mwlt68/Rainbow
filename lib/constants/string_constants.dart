@@ -61,4 +61,7 @@ class StringConstants{
   final notificationsPage="Notifications";
   final acoountPage="Acoount";
   
+  // Status
+  final statusMedia="messageMedia";
+  
 }

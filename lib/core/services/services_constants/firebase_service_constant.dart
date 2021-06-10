@@ -5,6 +5,7 @@ class FirebaseServiceStringConstant{
 
   final String SingleConversation="SingleConversation";
   final String Users="Users";
+  final String Status="Status";
   final String GroupConversation="GroupConversation";
   final String Members="members";
   final String IsGroup="isGroup";

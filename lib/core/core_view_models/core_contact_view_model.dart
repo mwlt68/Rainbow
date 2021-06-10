@@ -27,7 +27,7 @@ class ContactViewModel extends BaseViewModel {
         phoneNumbers.add(number);
       }
     }
-    return _userService.getUserFromUserPhoneNumbers(phoneNumbers);
+    return _userService.getUsersFromUserPhoneNumbers(phoneNumbers);
   }
 
   Future<PermissionStatus> getPermission() async {

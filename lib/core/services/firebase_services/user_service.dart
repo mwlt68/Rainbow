@@ -30,7 +30,7 @@ class UserService  extends FirebaseBaseService{
     return res;
   }
 
-  Stream<List<MyUserModel>> getUserFromUserPhoneNumbers(List<String> phoneNumbers)  {
+  Stream<List<MyUserModel>> getUsersFromUserPhoneNumbers(List<String> phoneNumbers)  {
     var ref=userCollectionRef.where(FirebaseServiceStringConstant.instance.PhoneNumber,whereIn: phoneNumbers);
   //    .orderBy(FirebaseServiceStringConstant.instance.Name);
     var res= ref.snapshots().map((event) => event.docs.map((e) => MyUserModel.fromSnapshot(e.data(),e.id)).toList());

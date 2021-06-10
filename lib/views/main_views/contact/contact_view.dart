@@ -16,11 +16,12 @@ part 'contact_string_values.dart';
 
 class ContactPage extends StatelessWidget {
   final _ContactStringValues _values = new _ContactStringValues();
-  ContactPage();
+  ContactViewModel contactViewModel;
+  ContactPage(this.contactViewModel);
   @override
   Widget build(BuildContext context) {
     var contactListWidget =
-        ContactsList(MyUserModel.CurrentUserId, query: _values.empty);
+        ContactsList(contactViewModel, query: _values.empty);
     return Scaffold(
       appBar: appBar(context, contactListWidget),
       body: Center(child: contactListWidget),
@@ -50,15 +51,13 @@ class ContactPage extends StatelessWidget {
 }
 
 class ContactsList extends StatelessWidget with BaseState {
+  ContactViewModel contactViewModel;
   final _ContactStringValues _values = new _ContactStringValues();
   final NavigatorService _navigatorService = getIt<NavigatorService>();
   BuildContext ctx;
-  String currentUserId;
-  ContactViewModel _contactViewModel;
   String query;
   List<MyUserModel> myUserModels;
-  ContactsList(
-    this.currentUserId, {
+  ContactsList(this.contactViewModel, {
     Key key,
     this.query,
   }) : super(key: key);
@@ -67,26 +66,14 @@ class ContactsList extends StatelessWidget with BaseState {
   Widget build(BuildContext context) {
     ctx = context;
     _myDialogs = new MyDialogs(context);
-    var model = getIt<ContactViewModel>();
-    return FutureBuilder(
-        future: model.getContatcs(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            _contactViewModel = model;
-            return getUsersWidget();
-          } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
-          } else if (snapshot.hasError) {
-            return Text(_values.UserGetError);
-          }
-        });
+    return getUsersWidget();
   }
 
   Widget getUsersWidget() {
     return ChangeNotifierProvider(
-      create: (BuildContext context) => _contactViewModel,
+      create: (BuildContext context) => contactViewModel,
       child: StreamBuilder<List<MyUserModel>>(
-          stream: _contactViewModel.getMyUserModels(),
+          stream: contactViewModel.getMyUserModels(),
           builder: (context, AsyncSnapshot<List<MyUserModel>> snapshot) {
             if (snapshot.hasError) {
               _myDialogs.showErrorDialog(_values.DataLoadError,
@@ -95,7 +82,7 @@ class ContactsList extends StatelessWidget with BaseState {
               return CircularProgressIndicator();
             }
             var ownUser = snapshot.data
-                .where((element) => element.id == this.currentUserId);
+                .where((element) => element.id == MyUserModel.CurrentUserId);
             if (ownUser.isNotEmpty) {
               snapshot.data.remove(ownUser.first);
             }
@@ -139,7 +126,7 @@ class ContactsList extends StatelessWidget with BaseState {
         onTap: () async {
           var model = getIt<ConversationViewModel>();
           var conversation = await model.startSingleConversation(
-              currentUserId, myUserModel.id);
+               MyUserModel.CurrentUserId, myUserModel.id);
           if (conversation != null) {
             Navigator.of(ctx).popUntil((route) => route.isFirst);
             _navigatorService
@@ -169,7 +156,7 @@ class ContactsList extends StatelessWidget with BaseState {
           onTap: () async {
             _navigatorService.navigateTo(GroupMembersSelect(
                 GroupMemberSelectOption.create,
-                contactModel: _contactViewModel));
+                contactModel: contactViewModel));
           },
         ));
   }

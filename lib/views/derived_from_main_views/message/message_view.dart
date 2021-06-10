@@ -70,7 +70,7 @@ class _MessagePageState extends State<MessagePage> with BaseState {
     });
 
     connectivityActive= widget.connectivityActive;
-        connectivitySubscription = Connectivity()
+    connectivitySubscription = Connectivity()
         .onConnectivityChanged
         .listen((ConnectivityResult result) {
           setState(() {
@@ -217,7 +217,7 @@ class _MessagePageState extends State<MessagePage> with BaseState {
     return Padding(
       padding: EdgeInsets.only(left: 10, right: 10),
       child: Visibility(
-        visible: connectivityActive,
+        visible: connectivityActive ?? true,
         child: InkWell(
           child: IconButton(
             onPressed: () async {

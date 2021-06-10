@@ -5,6 +5,7 @@ import 'package:rainbow/views/main_views/login/login_view.dart';
 import 'package:rainbow/core/core_models/core_user_model.dart';
 import 'package:rainbow/core/services/firebase_services/auth_service.dart';
 import 'package:rainbow/core/services/other_services/navigator_service.dart';
+import 'package:rainbow/views/main_views/status/state_view_delegate.dart';
 import 'package:rainbow/views/main_views/user_register/user_register_view.dart';
 import 'package:rainbow/constants/string_constants.dart';
 import 'package:rainbow/constants/color_constants.dart';
@@ -29,6 +30,7 @@ class MyApp extends StatelessWidget {
         accentColor: ColorConstants.instance.accentColor,
         primaryColor: ColorConstants.instance.primaryColor,
       ),
+     // home: Home2(),
       home: checkLoginWidget(),
     );
   }

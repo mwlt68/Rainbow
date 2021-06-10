@@ -7,11 +7,13 @@ class FirebaseBaseService {
   CollectionReference _singleCollectionRef;
   CollectionReference _groupCollectionRef;
   CollectionReference _userCollectionRef;
+  CollectionReference _statusCollectionRef;
 
   FirebaseFirestore get fBaseFireStore => fBaseFireStore;
   CollectionReference get singleCollectionRef => _singleCollectionRef;
   CollectionReference get groupCollectionRef => _groupCollectionRef;
   CollectionReference get userCollectionRef => _userCollectionRef;
+  CollectionReference get statusCollectionRef => _statusCollectionRef;
 
   FirebaseBaseService() {
     _singleCollectionRef = _fBaseFireStore
@@ -20,6 +22,8 @@ class FirebaseBaseService {
         .collection(FirebaseServiceStringConstant.instance.GroupConversation);
     _userCollectionRef = _fBaseFireStore
         .collection(FirebaseServiceStringConstant.instance.Users);
+    _statusCollectionRef = _fBaseFireStore
+        .collection(FirebaseServiceStringConstant.instance.Status);
   }
 
   CollectionReference getCollectionReferance(ConversationType conversationType){

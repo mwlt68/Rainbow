@@ -28,6 +28,7 @@ class _HomeState extends State<Home>
     with SingleTickerProviderStateMixin, BaseState {
   final _HomeStringValues _values = _HomeStringValues();
   final NavigatorService _navigatorService = getIt<NavigatorService>();
+  ContactViewModel _contactViewModel;
   TabController _tabController;
   bool isVisibleMessageFAB = true;
   MyDialogs _myDialogs;
@@ -44,7 +45,7 @@ class _HomeState extends State<Home>
     _tabController = new TabController(length: 4, vsync: this, initialIndex: 1);
     _tabController.addListener(() {
       setState(() {
-        isVisibleMessageFAB = _tabController.index != 0;
+        isVisibleMessageFAB = !(_tabController.index == 0 || _tabController.index == 2);
       });
     });
 
@@ -70,7 +71,7 @@ class _HomeState extends State<Home>
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             if (snapshot.data == PermissionStatus.granted) {
-              return buildScaffold();
+              return getContact();
             } else {
               permissionShowDialog(context);
             }
@@ -98,6 +99,24 @@ class _HomeState extends State<Home>
             ));
   }
 
+  Widget getContact(){
+    if(_contactViewModel != null){
+      return buildScaffold();
+    }
+    var model = getIt<ContactViewModel>();
+      return FutureBuilder(
+        future: model.getContatcs(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            _contactViewModel = model;
+            return buildScaffold();
+          } else if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          } else if (snapshot.hasError) {
+            return Text(_values.contactsGetError);
+          }
+        });
+  }
   Widget buildScaffold() {
     return Scaffold(
         body: scaffoldBody(), floatingActionButton: floatingActionButton());
@@ -112,7 +131,7 @@ class _HomeState extends State<Home>
           color: Colors.white,
         ),
         onPressed: () {
-          _navigatorService.navigateTo(ContactPage());
+          _navigatorService.navigateTo(ContactPage(_contactViewModel));
         },
       ),
     );
@@ -143,7 +162,7 @@ class _HomeState extends State<Home>
       child: TabBarView(controller: _tabController, children: [
         CameraPage(),
         ConversationPage(),
-        StatusPage(),
+        StatusPage(_contactViewModel),
         SettingsPage(),
       ]),
     ));
