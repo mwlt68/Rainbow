@@ -1,5 +1,5 @@
 # RAINBOW
-This is real time chat app example.
+This is real time chat app (Whatsapp clone) example.
 # Project Overview
 
 This project is the graduation project of the Necmettin Erbakan University Computer Engineering department. The aim of the project is to allow users to send messages to each other and transmit media files in real time. Moreover, while performing these operations, it is aimed that only users can see these messages. In other words, messages are stored and transmitted encrypted.
@@ -25,9 +25,8 @@ To meet with current technology, flutter and firebase after mobile coding experi
 - Some Offline Bugs Fix (fix bugs when the program is offline)
 - Status (Some popular social media apps support story feature)
 
-# Video link of project demonstration
+# [Click for watch demonstration video](https://vimeo.com/567948952)
 
-https://vimeo.com/567796774
 
 # Project Details
 
