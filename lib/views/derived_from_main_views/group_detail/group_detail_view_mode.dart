@@ -23,6 +23,7 @@ class GroupDetailViewModel  with BaseState{
     var date = conversationCache.createDate.toDate();
     return formatter.format(date);
   }
+  
   String selectedCountText(){
     String userLength = conversationCache.myUserModels.length.toString();
     String groupMemberCount=GroupConversationDTOModel.MaxGroupMembers.toString();
