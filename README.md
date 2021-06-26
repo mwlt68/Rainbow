@@ -14,6 +14,21 @@ To meet with current technology, flutter and firebase after mobile coding experi
 
 [Firebase](https://firebase.google.com/)
 
+# Project Progress
+- Login (Firestore phone authentication)
+- Register (User name, status and image save)
+- Chat (List of messaged users)
+- Message (Chat members can show messages, send messages or delete messages -via contacts -save firebase encrypted)
+- Profile Update
+- User Detail 
+- Group Detail 
+- Some Offline Bugs Fix (fix bugs when the program is offline)
+- Status (Some popular social media apps support story feature)
+
+# Video link of project demonstration
+
+https://vimeo.com/567796774
+
 # Project Details
 
 Mobile Authentication Screen / Verification Screen
@@ -65,8 +80,20 @@ Settings Screen / Profile Settings Screen
   <img src="ReadmeImages/15.PNG" width="250" height="500">
 <div>
   
+ Status Screen / Status Detail Screen
+
+<div>
+  <img src="ReadmeImages/17.PNG" width="250" height="500">
+  <img src="ReadmeImages/18.PNG" width="250" height="500">
+<div>
+  
 Status Set Screen 
 
 <div>
   <img src="ReadmeImages/16.PNG" width="250" height="500">
+<div>
+  
+Project Firestore Collections
+<div>
+  <img src="ReadmeImages/19.PNG" >
 <div>
